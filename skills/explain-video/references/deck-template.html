@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<!--
+  Explain-deck template. Copy to presentations/<slug>/index.html and rewrite the
+  <section class="slide"> blocks. Everything below the slides is the recording
+  contract — do not rename these hooks:
+
+    body.record-mode      hides dock/hints, stage fills the viewport
+    .stage                the 16:9 frame that gets screenshotted
+    .slide                one per page; data-id / data-duration / data-narration
+    .anim + data-d        staggered enter animation, delay in ms
+    [data-step]           progressive highlight during the slide hold
+    [data-mark]           sub-items marked in sequence inside a step
+    window.deckAPI        go / playSequence / getSlideCount / getDurationsSec / setRecordMode
+
+  Keyboard: ← → page · N toggle narration dock · E export narration.json · P autoplay
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Explain Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #0e1114; --paper: #f4efe6; --muted: #8a8478; --line: #d9d1c4;
+    --accent: #e85d04; --slate: #2c333a; --ok: #2a9d8f;
+    --slide-pad: clamp(2rem, 5vw, 4.5rem);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%; background: #1a1d21; color: var(--ink); overflow: hidden;
+    font-family: "DM Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  body.record-mode .hint, body.record-mode .narration-dock { display: none !important; }
+
+  .deck { position: relative; width: 100vw; height: 100vh; display: grid; place-items: center; }
+  .stage {
+    width: min(1120px, 96vw); height: min(630px, 88vh); aspect-ratio: 16 / 9;
+    background: var(--paper); border-radius: 4px; position: relative; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 40px 80px rgba(0,0,0,.45);
+  }
+  /* Recording fills the frame: no letterbox, wider gutters so text is not cramped. */
+  body.record-mode .stage { width: 100vw; height: 100vh; max-width: none; border-radius: 0; box-shadow: none; }
+  body.record-mode { --slide-pad: clamp(2.5rem, 5.5vw, 4.5rem); }
+  body.record-mode .slide { padding-left: 5vw; padding-right: 5vw; }
+
+  /* --- Recording type scale ---------------------------------------------
+     The rem ceilings above are tuned for the ~1120px preview stage. Reuse
+     them at 1920x1080 and the deck reads as a small block of text floating
+     in an empty frame. In record mode, drop the ceilings and size in vw so
+     type grows with the frame; also reserve the bottom band for captions so
+     the vertically-centred content sits above them, not behind them. */
+  body.record-mode .slide { padding-bottom: 16vh; }
+  body.record-mode .eyebrow { font-size: 1vw; margin-bottom: 1.6vh; }
+  /* max-width in em, not ch: `ch` is the width of "0", so a CJK title wraps
+     around half as early as the number suggests. 1em ≈ one CJK glyph. */
+  body.record-mode h1 { font-size: 4.8vw; max-width: 13em; }
+  body.record-mode h2 { font-size: 3.7vw; max-width: 16em; margin-bottom: 2.4vh; }
+  body.record-mode .lede { font-size: 1.75vw; max-width: 30em; margin-top: 2.2vh; }
+  body.record-mode .big-rule { height: 4px; margin: 2.4vh 0 2vh; }
+  body.record-mode .slide.active .big-rule.in { width: 72px; }
+  body.record-mode .bullets { gap: 1.9vh; }
+  body.record-mode .bullets li { font-size: 1.75vw; grid-template-columns: 3.4vw 1fr; gap: 1.2vw; }
+  body.record-mode .bullets .n { font-size: 1.05vw; }
+  body.record-mode .pipeline { gap: 1.4vw; margin-top: 3vh; }
+  body.record-mode .pipe-step { padding: 2.2vh 1.4vw; }
+  body.record-mode .pipe-step .idx { font-size: .92vw; }
+  body.record-mode .pipe-step strong { font-size: 1.4vw; }
+  body.record-mode .pipe-step span { font-size: 1.12vw; }
+  body.record-mode .two-col { gap: 2vw; }
+  body.record-mode .card { padding: 2.6vh 1.6vw; }
+  body.record-mode .card h3 { font-size: 2vw; }
+  body.record-mode .card li { font-size: 1.28vw; }
+  body.record-mode .meta-row { font-size: 1vw; gap: 1.2vh 2vw; margin-top: 3.5vh; }
+  body.record-mode .footer { font-size: .95vw; bottom: 1.8vh; }
+  body.record-mode .playhead { bottom: 5.2vh; }
+
+  .stage::after {
+    content: ""; position: absolute; inset: -20%; pointer-events: none;
+    background:
+      radial-gradient(circle at 12% 20%, rgba(232,93,4,.08), transparent 42%),
+      radial-gradient(circle at 88% 78%, rgba(42,157,143,.07), transparent 40%);
+    animation: glowDrift 12s ease-in-out infinite alternate;
+  }
+  @keyframes glowDrift { from { transform: translate3d(-1%,-1%,0) scale(1); } to { transform: translate3d(1.5%,1%,0) scale(1.04); } }
+
+  .slide {
+    position: absolute; inset: 0; width: 100%; z-index: 1; display: none;
+    flex-direction: column; justify-content: center;
+    padding: var(--slide-pad); padding-bottom: calc(var(--slide-pad) + 36px);
+  }
+  .slide.active { display: flex; }
+  /* Full-bleed children: a narrow max-width here is what leaves the right side
+     of a 16:9 recording looking empty. Keep block elements at 100%. */
+  .slide > * { width: 100%; max-width: none; }
+
+  .anim {
+    opacity: 0; transform: translateY(18px); will-change: opacity, transform;
+    transition: opacity 520ms cubic-bezier(.22,1,.36,1), transform 520ms cubic-bezier(.22,1,.36,1),
+                box-shadow 320ms ease, border-color 320ms ease, background 320ms ease;
+  }
+  .slide.active .anim.in { opacity: 1; transform: translateY(0); }
+  .anim.from-left { transform: translateX(-28px); }
+  .slide.active .anim.from-left.in { transform: translateX(0); }
+  .anim.scale { transform: scale(.92); }
+  .slide.active .anim.scale.in { transform: scale(1); }
+
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace; font-size: .72rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); font-weight: 500; margin-bottom: 1.1rem;
+  }
+  h1, h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; line-height: 1.08; letter-spacing: -.02em; }
+  h1 { font-size: clamp(2.5rem, 4.6vw, 3.4rem); max-width: 22ch; }
+  h2 { font-size: clamp(2rem, 3.6vw, 2.85rem); max-width: 26ch; margin-bottom: 1.25rem; }
+  .lede { margin-top: 1.25rem; font-size: clamp(1.1rem, 1.7vw, 1.3rem); line-height: 1.55; color: var(--slate); max-width: 48ch; }
+  .big-rule { width: 0; height: 3px; background: var(--accent); margin: 1.4rem 0 1.1rem; transition: width 700ms cubic-bezier(.22,1,.36,1) 180ms; }
+  .slide.active .big-rule.in { width: 48px; }
+
+  .bullets { list-style: none; display: flex; flex-direction: column; gap: .85rem; }
+  .bullets li {
+    display: grid; grid-template-columns: 2.2rem 1fr; gap: .85rem; align-items: start;
+    font-size: clamp(1.1rem, 1.65vw, 1.32rem); line-height: 1.45; color: var(--slate);
+  }
+  .bullets li.highlight { color: var(--ink); }
+  .bullets .n { font-family: "JetBrains Mono", monospace; font-size: .78rem; color: var(--accent); padding-top: .35rem; transition: transform 250ms ease; }
+  .bullets li.highlight .n { transform: scale(1.08); }
+
+  .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.5rem; }
+  .pipe-step { background: #fff; border: 1px solid var(--line); border-radius: 3px; padding: 1rem .9rem; position: relative; overflow: hidden; }
+  .pipe-step::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); transform: scaleY(0); transform-origin: top; transition: transform 420ms cubic-bezier(.22,1,.36,1); }
+  .pipe-step.on { border-color: rgba(232,93,4,.45); box-shadow: 0 10px 28px rgba(232,93,4,.12); background: linear-gradient(180deg,#fff,#fff8f1); }
+  .pipe-step.on::after { transform: scaleY(1); }
+  .pipe-step .idx { font-family: "JetBrains Mono", monospace; font-size: .68rem; color: var(--accent); letter-spacing: .08em; margin-bottom: .5rem; display: block; }
+  .pipe-step strong { display: block; font-size: .95rem; margin-bottom: .35rem; }
+  .pipe-step span { font-size: .8rem; color: var(--muted); line-height: 1.4; display: block; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 3px; padding: 1.25rem 1.35rem; }
+  .card.on { border-color: rgba(232,93,4,.4); box-shadow: 0 12px 30px rgba(14,17,20,.08); }
+  .card h3 { font-family: "Instrument Serif", Georgia, serif; font-size: 1.45rem; font-weight: 400; margin-bottom: .65rem; }
+  .card ul { list-style: none; display: flex; flex-direction: column; gap: .45rem; }
+  .card li { font-size: .95rem; line-height: 1.5; color: var(--slate); }
+  .card li::before { content: "→ "; color: var(--accent); font-size: .8em; }
+  .card li.mark { color: var(--ink); font-weight: 500; }
+
+  .meta-row { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; margin-top: 2rem; font-family: "JetBrains Mono", monospace; font-size: .72rem; color: var(--muted); }
+  .meta-row span { padding: .35rem .55rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.55); }
+  .meta-row span.pop { border-color: rgba(232,93,4,.4); color: var(--ink); background: #fff4ea; }
+
+  .footer { position: absolute; left: var(--slide-pad); right: var(--slide-pad); bottom: 1.1rem; display: flex; justify-content: space-between; align-items: center; font-family: "JetBrains Mono", monospace; font-size: .68rem; color: var(--muted); z-index: 3; }
+  .progress { display: flex; gap: 5px; }
+  .progress i { width: 16px; height: 2px; background: var(--line); display: block; transition: background 300ms ease, width 300ms ease; }
+  .progress i.on { background: var(--muted); }
+  .progress i.current { background: var(--accent); width: 26px; }
+  .playhead { position: absolute; left: 0; right: 0; bottom: 44px; height: 2px; z-index: 4; overflow: hidden; }
+  .playhead > b { display: block; height: 100%; width: 0; background: linear-gradient(90deg, rgba(232,93,4,.2), var(--accent)); transition: width 80ms linear; }
+
+  .narration-dock { position: fixed; left: 50%; transform: translateX(-50%); bottom: 1.2rem; max-width: min(1120px, 94vw); display: flex; gap: .9rem; padding: .7rem 1rem; background: rgba(20,23,26,.92); border-radius: 6px; font-size: .82rem; line-height: 1.5; z-index: 9; }
+  .narration-dock .label { font-family: "JetBrains Mono", monospace; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); white-space: nowrap; padding-top: .2rem; }
+  .narration-dock p { color: #cfc7ba; }
+  .hint { position: fixed; top: 1rem; right: 1.25rem; font-family: "JetBrains Mono", monospace; font-size: .68rem; color: rgba(255,255,255,.35); z-index: 10; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .anim, .big-rule, .pipe-step { transition: none !important; }
+    .slide.active .anim { opacity: 1; transform: none; }
+    .stage::after { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="hint">← → 翻页 · N 旁白 · E 导出 · P 自动播放</div>
+
+<div class="deck">
+  <div class="stage" id="stage">
+
+    <section class="slide active"
+      data-id="01-hook"
+      data-duration="11"
+      data-narration="第一页的旁白写在这里。一到两句，口语化，念出来正好十秒左右。">
+      <p class="eyebrow anim" data-d="0">Explain Deck · 01</p>
+      <h1 class="anim" data-d="120">标题写一个能被记住的短句</h1>
+      <div class="big-rule anim" data-d="280"></div>
+      <p class="lede anim" data-d="360">副标题一句话讲清楚这条视频要解决什么。</p>
+      <div class="meta-row">
+        <span class="anim scale" data-d="520">标签一</span>
+        <span class="anim scale" data-d="640">标签二</span>
+      </div>
+    </section>
+
+    <section class="slide"
+      data-id="02-points"
+      data-duration="12"
+      data-narration="第二页的旁白。三个要点依次被点亮，节奏跟着这段话走。">
+      <p class="eyebrow anim" data-d="0">Context · 02</p>
+      <h2 class="anim" data-d="100">一页只讲一个点</h2>
+      <ul class="bullets">
+        <li class="anim" data-d="280" data-step="0"><span class="n">01</span><span>要点一</span></li>
+        <li class="anim" data-d="520" data-step="1"><span class="n">02</span><span>要点二</span></li>
+        <li class="anim" data-d="760" data-step="2"><span class="n">03</span><span>要点三</span></li>
+      </ul>
+    </section>
+
+    <section class="slide"
+      data-id="03-pipeline"
+      data-duration="14"
+      data-narration="第三页的旁白。四个步骤按顺序高亮，讲到哪一步亮哪一块。">
+      <p class="eyebrow anim" data-d="0">Pipeline · 03</p>
+      <h2 class="anim" data-d="100">四步管线</h2>
+      <div class="pipeline">
+        <div class="pipe-step anim" data-d="280" data-step="0"><span class="idx">STEP 1</span><strong>内容</strong><span>框架与口播稿</span></div>
+        <div class="pipe-step anim" data-d="420" data-step="1"><span class="idx">STEP 2</span><strong>画面</strong><span>HTML 幻灯</span></div>
+        <div class="pipe-step anim" data-d="560" data-step="2"><span class="idx">STEP 3</span><strong>声音</strong><span>TTS 与字幕</span></div>
+        <div class="pipe-step anim" data-d="700" data-step="3"><span class="idx">STEP 4</span><strong>合成</strong><span>录屏与混音</span></div>
+      </div>
+    </section>
+
+    <div class="playhead"><b id="playhead"></b></div>
+    <div class="footer">
+      <div class="progress" id="progress"></div>
+      <div id="counter">01 / 03</div>
+    </div>
+  </div>
+</div>
+
+<div class="narration-dock" id="dock">
+  <span class="label">旁白</span>
+  <p id="dock-text"></p>
+</div>
+
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const progress = document.getElementById("progress");
+  const counter = document.getElementById("counter");
+  const dock = document.getElementById("dock");
+  const dockText = document.getElementById("dock-text");
+  const playhead = document.getElementById("playhead");
+  let i = 0, showDock = true, timers = [], raf = 0, autoplay = false;
+
+  if (new URLSearchParams(location.search).has("record")) {
+    document.body.classList.add("record-mode");
+    showDock = false;
+    dock.hidden = true;
+  }
+
+  slides.forEach(() => progress.appendChild(document.createElement("i")));
+
+  function clearTimers() {
+    timers.forEach(clearTimeout); timers = [];
+    if (raf) cancelAnimationFrame(raf); raf = 0;
+  }
+
+  function runEnterAnimations(slide) {
+    slide.querySelectorAll(".anim").forEach((el) => el.classList.remove("in"));
+    slide.querySelectorAll(".pipe-step, .card, .bullets li").forEach((el) => el.classList.remove("on", "highlight"));
+    slide.querySelectorAll("[data-mark]").forEach((el) => el.classList.remove("mark"));
+    slide.querySelectorAll(".anim").forEach((el) => {
+      timers.push(setTimeout(() => {
+        el.classList.add("in");
+        if (el.matches(".meta-row span")) setTimeout(() => el.classList.add("pop"), 80);
+      }, Number(el.dataset.d || 0)));
+    });
+  }
+
+  /* Progressive emphasis across the slide hold: first 22% for the enter
+     animation, middle 70% split evenly across [data-step] elements. */
+  function runStepHighlights(slide, durationSec) {
+    const steps = [...slide.querySelectorAll("[data-step]")];
+    if (!steps.length || durationSec <= 0) return;
+    const startAt = durationSec * 0.22;
+    const stepDur = (durationSec * 0.7) / steps.length;
+    steps.forEach((el, idx) => {
+      timers.push(setTimeout(() => {
+        steps.forEach((s) => s.classList.remove("on", "highlight"));
+        el.classList.add("on", "highlight");
+        const marks = [...el.querySelectorAll("[data-mark]")];
+        marks.forEach((m, mi) => {
+          timers.push(setTimeout(() => {
+            marks.forEach((x) => x.classList.remove("mark"));
+            m.classList.add("mark");
+          }, mi * Math.min(420, (stepDur * 1000) / Math.max(marks.length, 1))));
+        });
+      }, (startAt + idx * stepDur) * 1000));
+    });
+  }
+
+  function setPlayhead(p) { playhead.style.width = Math.max(0, Math.min(100, p * 100)).toFixed(2) + "%"; }
+
+  function go(n, opts = {}) {
+    clearTimers();
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+    progress.querySelectorAll("i").forEach((dot, idx) => {
+      dot.classList.toggle("on", idx < i);
+      dot.classList.toggle("current", idx === i);
+    });
+    counter.textContent = String(i + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0");
+    dockText.textContent = slides[i].dataset.narration || "";
+    dock.hidden = !showDock;
+
+    const slide = slides[i];
+    runEnterAnimations(slide);
+    if (!opts.skipSteps) {
+      // Prefer the real recording duration over the authored estimate.
+      const sec = opts.slideMs ? opts.slideMs / 1000 : Number(slide.dataset.duration || 0);
+      runStepHighlights(slide, sec);
+    }
+    if (opts.slideMs > 0) {
+      const t0 = performance.now();
+      const tick = (now) => {
+        const p = (now - t0) / opts.slideMs;
+        setPlayhead(p);
+        if (p < 1 && slides[i] === slide) raf = requestAnimationFrame(tick);
+      };
+      setPlayhead(0);
+      raf = requestAnimationFrame(tick);
+    } else {
+      setPlayhead(0);
+    }
+  }
+
+  /* Press E to dump narration.json — the file the TTS + timeline steps read. */
+  function exportNarration() {
+    let t = 0;
+    const data = {
+      title: document.title,
+      language: document.documentElement.lang || "zh-CN",
+      total_duration_sec: slides.reduce((a, s) => a + Number(s.dataset.duration || 0), 0),
+      slides: slides.map((s, idx) => {
+        const duration = Number(s.dataset.duration || 0);
+        const start = t; t += duration;
+        return {
+          index: idx + 1,
+          id: s.dataset.id || String(idx + 1),
+          title: (s.querySelector("h1, h2") || {}).textContent || "",
+          narration: s.dataset.narration || "",
+          duration_sec: duration, start_sec: start, end_sec: t,
+        };
+      }),
+    };
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    a.download = "narration.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function playSequence(durationsMs) {
+    autoplay = true;
+    for (let s = 0; s < slides.length && autoplay; s++) {
+      const ms = durationsMs?.[s] ?? Number(slides[s].dataset.duration || 8) * 1000;
+      go(s, { slideMs: ms });
+      await new Promise((r) => timers.push(setTimeout(r, ms)));
+    }
+    autoplay = false;
+    setPlayhead(1);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (["ArrowRight", " ", "PageDown"].includes(e.key)) { e.preventDefault(); autoplay = false; go(i + 1); }
+    else if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); autoplay = false; go(i - 1); }
+    else if (e.key === "Home") { autoplay = false; go(0); }
+    else if (e.key === "End") { autoplay = false; go(slides.length - 1); }
+    else if (e.key.toLowerCase() === "n") { showDock = !showDock; dock.hidden = !showDock; }
+    else if (e.key.toLowerCase() === "e") exportNarration();
+    else if (e.key.toLowerCase() === "p") playSequence();
+  });
+
+  document.getElementById("stage").addEventListener("click", (e) => {
+    if (document.body.classList.contains("record-mode")) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    autoplay = false;
+    if (x > rect.width * 0.6) go(i + 1);
+    else if (x < rect.width * 0.4) go(i - 1);
+  });
+
+  window.deckAPI = {
+    go, playSequence,
+    getSlideCount: () => slides.length,
+    getDurationsSec: () => slides.map((s) => Number(s.dataset.duration || 0)),
+    getIndex: () => i,
+    setRecordMode: (on) => {
+      document.body.classList.toggle("record-mode", !!on);
+      if (on) { showDock = false; dock.hidden = true; }
+    },
+  };
+
+  go(0);
+</script>
+</body>
+</html>

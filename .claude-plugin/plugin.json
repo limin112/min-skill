@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "minli-skill",
+  "version": "0.1.0",
+  "description": "敏立的 Claude Code skill 合集：讲解视频流水线（explain-video）与公众号排版模板（wechat-publish-template）。",
+  "author": {
+    "name": "limin112"
+  },
+  "homepage": "https://github.com/limin112/minli-skill",
+  "repository": "https://github.com/limin112/minli-skill",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "skill",
+    "explainer-video",
+    "tts",
+    "ffmpeg",
+    "wechat"
+  ]
+}
