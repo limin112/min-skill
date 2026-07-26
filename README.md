@@ -12,13 +12,24 @@
 
 ## 安装
 
-把仓库 clone 到 Claude 的 skills 目录：
+先 cd 到用户目录，再用相对路径 clone（避开 `~` 在 Windows 不展开的坑）：
 
 ```bash
-git clone https://github.com/limin112/wechat-publish-template.git ~/.claude/skills/wechat-publish-template
+cd ~
+git clone https://github.com/limin112/wechat-publish-template.git .claude/skills/wechat-publish-template
 ```
 
-或者只放在当前项目里：`./.claude/skills/wechat-publish-template`。
+> **Windows cmd.exe 用户**：第 1 步改成 `cd /d %USERPROFILE%`，第 2 步原样跑就行（路径分隔符用 `/` 现代 git 也接受）。
+>
+> ⚠️ **不要写成 `git clone ... ~/...`**——`~` 在 Windows 的 cmd 和 PowerShell 里不会展开，会在当前目录下创建一个字面的 `~` 文件夹。
+>
+> 如果 clone 报错 `could not create work tree dir`，说明 `.claude/skills/` 不存在，先建一下：`mkdir -p .claude/skills`（cmd 用 `mkdir .claude\skills`），再 clone。
+
+或者只对当前项目生效（不用 cd）：
+
+```bash
+git clone https://github.com/limin112/wechat-publish-template.git .claude/skills/wechat-publish-template
+```
 
 下次启动 Claude Code 即生效。
 

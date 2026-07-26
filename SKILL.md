@@ -1,7 +1,7 @@
 ---
 name: wechat-publish-template
 description: 把 Markdown 文章转成"个人技术风"公众号 HTML（橙黑赛博朋克风格）。用户提供 .md 文件路径，或贴一段 Markdown，并说"转成公众号"/"做成公众号排版"/"套公众号模板"时触发。产物是单一 HTML 文件，全 inline style，可直接在浏览器打开后全选复制粘贴到微信公众号编辑器。不要在用户只是问"如何写公众号"或"公众号选题"这类非排版问题时触发。
-version: 0.1.0
+version: 0.2.0
 ---
 
 # wechat-publish-template
@@ -62,12 +62,33 @@ version: 0.1.0
   2. 使用流程：浏览器打开 → 全选复制 → 公众号编辑器粘贴
   3. 图片需要在公众号编辑器里手动重新上传
 
+## 同步到微信公众号（wechatsync CLI）
+
+排版好的 HTML 可以用 `wechatsync` CLI 直接同步到公众号草稿箱，免去手动复制粘贴。
+
+> ⚠️ **平台 key 是 `weixin`，不是 `wechat`。** wechatsync 体系里微信公众号的 driver 名就叫 `weixin`，用 `wechat` 会报「找不到平台」。而且 `sync` 不写 `-p` 时默认发去 `zhihu,juejin`，所以发公众号**必须显式** `-p weixin`。
+
+```bash
+wechatsync sync "<文件名>.wechatsync.html" -p weixin --timeout 60000
+```
+
+**前提（缺一不可）：**
+- 常用 Chrome 里装了扩展「文章同步助手」(Wechatsync)，且已登录公众号后台
+- 扩展的「同步桥接」开关打开
+- CLI ↔ 扩展走 WebSocket **9527** 端口：**CLI 是监听方、扩展是连接方**——必须先跑 `wechatsync sync`（它才起 9527 监听），扩展再自动连上来。光点扩展图标不会同步本地 HTML。**命令一直卡住不返回 = 扩展没连上**（没装 / 没开桥接 / 常用 Chrome 没开）。
+
+**`.wechatsync.html` vs `.wechat.html`：**
+- `.wechat.html`：`<img src>` 留空，走"浏览器打开 → 全选复制 → 编辑器粘贴"的手动流（见 Step 4）
+- `.wechatsync.html`：`<img src>` 填**本地绝对路径**，交给扩展自动上传到素材库。要走 CLI 同步就额外生成这个变体。
+
+同步过去通常落在**草稿箱**，不会直接群发。
+
 ## 必守规则
 
 1. **全部 inline style**——禁止生成 `<style>` 块或 `class` 属性
 2. **不要 JS / 不要伪元素 / 不要 transform**——参见 `references/wechat-html-constraints.md`
 3. **保留 emoji**——但装饰用的几何字符（▶ ★ ◎ ⚡）只能在 `<section>` 内做装饰，不要靠它承载语义
-4. **图片 `src` 留空**或填 `"REPLACE_IN_WECHAT_EDITOR"`——绝不嵌入本地路径或外链
+4. **图片 `src` 留空**或填 `"REPLACE_IN_WECHAT_EDITOR"`——`.wechat.html`（手动粘贴流）里绝不嵌入本地路径或外链。**例外**：要走 wechatsync CLI 同步时，另存一份 `.wechatsync.html`，`src` 填本地绝对路径供扩展上传（见上节「同步到微信公众号」）
 5. **链接保留但提示**——告诉用户公众号会剥外链
 6. **色板锁死**：主橙 `#FF5722`、深黑 `#0A0A0A`、文字 `#1A1A1A`、浅灰 `#F5F5F5`，不要自创颜色
 
