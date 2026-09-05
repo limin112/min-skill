@@ -19,7 +19,7 @@ Skill：放在 `skills/` 下，Claude Code 加载后按需求自动触发。
 
 | 工具 | 干什么 | 适用 |
 |---|---|---|
-| [**uu-term-bridge**](tools/uu-term-bridge) | 让网易UU远程手机端的终端列表看到并接管 Mac 上 iTerm2 的每个标签，手机新开的终端在 Mac 自动弹窗 | macOS + iTerm2 + 网易UU远程 |
+| [**uu-term-bridge**](tools/uu-term-bridge) | 让网易UU远程手机端的终端列表看到并接管 Mac 上 iTerm2 的每个标签，手机新开的终端在 Mac 自动弹窗 | [1 分钟，开源模型原生支持移动端](https://x.com/MinLiBuilds/status/2096238709381476424?s=20) |
 
 ## 安装
 
