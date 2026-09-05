@@ -65,11 +65,11 @@ git clone https://github.com/limin112/minli-skill.git .claude/skills/minli-skill
 ```
 minli-skill/
 ├── .claude-plugin/plugin.json      ← 让整个文件夹作为一个 skill 合集被加载
-├── tools/
-│   └── uu-term-bridge/             ← 独立工具，不是 skill：install.sh + bin/ + test/
-└── skills/
-    ├── explain-video/              ← SKILL.md + scripts/ + references/
-    └── wechat-publish-template/    ← SKILL.md + assets/ + references/ + evals/
+├── skills/                         ← Claude Code 加载的 skill
+│   ├── explain-video/              ← SKILL.md + scripts/ + references/
+│   └── wechat-publish-template/    ← SKILL.md + assets/ + references/ + evals/
+└── tools/                          ← 独立工具，不是 skill，手动安装
+    └── uu-term-bridge/             ← install.sh + bin/ + test/
 ```
 
 `skills/` 下每多一个带 `SKILL.md` 的文件夹，就多一个 skill，不用改任何配置。
