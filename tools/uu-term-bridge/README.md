@@ -28,10 +28,8 @@ UU 的终端底层是它自带的一个 tmux（socket 在 `~/Library/Application
 前提：macOS，已安装并登录网易UU远程，已安装 iTerm2。
 
 ```bash
-# 已经按合集方式装了 minli-skill 的话
-cd ~/.claude/skills/minli-skill/skills/uu-term-bridge
-# 或者单独克隆
-git clone https://github.com/limin112/min-skill.git && cd min-skill/skills/uu-term-bridge
+git clone https://github.com/limin112/min-skill.git
+cd min-skill/tools/uu-term-bridge
 ./install.sh --dry-run   # 先看会做什么
 ./install.sh
 ```
