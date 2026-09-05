@@ -1,0 +1,140 @@
+#!/bin/zsh
+# uu-term-bridge
+# 监听网易UU远程自带 tmux 上的会话。手机/远端新建一个终端时，本机自动弹一个
+# iTerm2 窗口 attach 到同一个 tmux 会话，两边画面同步。
+#
+# 直接看 UU 的 tmux socket，而不是 uuyc-cli lterm ls：UU 的显示名会重复
+# （几个会话都叫 session3），lterm ls 会把重名的合并掉；tmux 会话名 uuremote-<数字> 才唯一。
+#
+# 本地用 uu-new / uut 建的会话不会重复开窗：它们建会话前往 pending 文件追加一行时间戳，
+# watcher 每看到一个新会话就消费一行（15 秒内的才算数）。连开多个也不会串。
+# 会话消失后认领自动清理。你手动关掉本地窗口后不会再弹，直到那个会话结束又重建。
+#
+# 环境变量：
+#   UUYC_MUX           UU 自带 tmux 的路径
+#   UUYC_SOCK          UU 的 tmux socket
+#   UU_WATCH_INTERVAL  轮询间隔秒，默认 2
+#   UU_TERM_PROFILE    用哪个 iTerm2 profile 开窗，空则默认 profile
+#   UU_BRIDGE_STATE    状态目录
+
+setopt no_unset
+setopt pipe_fail
+
+# launchd 起的进程没有 locale。tmux 在非 UTF-8 环境下会把中文和控制字符都换成 _，
+# 显示名就毁了。这里兜底设一个。
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-$LANG}"
+
+MUX="${UUYC_MUX:-/Applications/UURemote.app/Contents/Helpers/tmux/uuyc-mux}"
+SOCK="${UUYC_SOCK:-${HOME}/Library/Application Support/UURemote/tmux.sock}"
+ATTACH="${UU_ATTACH:-${HOME}/.local/bin/uu-attach}"
+STATE_DIR="${UU_BRIDGE_STATE:-${HOME}/.local/state/uu-term-bridge}"
+CLAIM_DIR="${STATE_DIR}/claimed"
+PENDING="${STATE_DIR}/pending"
+PENDING_MAX_AGE=15
+LOG="${STATE_DIR}/watch.log"
+INTERVAL="${UU_WATCH_INTERVAL:-2}"
+PROFILE="${UU_TERM_PROFILE:-}"
+
+mkdir -p "$CLAIM_DIR"
+
+log() { print -r -- "$(date '+%F %T') $*" >> "$LOG" }
+
+# 会话名是 uuremote-<数字>，直接当文件名；文件内容是显示名
+claim_path() { print -r -- "${CLAIM_DIR}/${1//\//_}" }
+claim()      { print -rn -- "$2" > "$(claim_path "$1")" }
+
+# 只列会话名，一行一个。socket 不在或服务器没起时返回非 0，调用方跳过本轮。
+list_sessions() {
+  [[ -S "$SOCK" ]] || return 1
+  "$MUX" -S "$SOCK" list-sessions -F '#{session_name}' 2>/dev/null
+}
+
+# 会话的显示名 = 它第一个窗口的名字
+label_of() {
+  "$MUX" -S "$SOCK" display-message -p -t "$1" '#{window_name}' 2>/dev/null
+}
+
+# 会话上挂着几个客户端
+attached_of() {
+  "$MUX" -S "$SOCK" display-message -p -t "$1" '#{session_attached}' 2>/dev/null || print 0
+}
+
+# pending 文件一行一个时间戳，每个本地建的会话占一行。取走一行返回 0；没有新鲜的返回 1。
+pending_take() {
+  [[ -f "$PENDING" ]] || return 1
+  local now t taken=0
+  local -a fresh
+  fresh=()
+  now="$(date +%s)"
+  while IFS= read -r t; do
+    [[ "$t" == <-> ]] || continue
+    (( now - t <= PENDING_MAX_AGE )) || continue
+    if (( ! taken )); then taken=1; continue; fi
+    fresh+=("$t")
+  done < "$PENDING"
+  if (( ${#fresh} )); then print -l -- "${fresh[@]}" > "$PENDING"; else rm -f "$PENDING"; fi
+  (( taken ))
+}
+
+open_window() {
+  local sess="$1" label="$2" f script
+  f="$(mktemp /tmp/uu-attach.XXXXXXXX)"
+  { print -r -- "$sess"; print -r -- "$label"; } > "$f"
+  if [[ -n "$PROFILE" ]]; then
+    script="tell application \"iTerm\" to create window with profile \"${PROFILE//\"/\\\"}\" command \"${ATTACH} ${f}\""
+  else
+    script="tell application \"iTerm\" to create window with default profile command \"${ATTACH} ${f}\""
+  fi
+  if osascript -e "$script" >/dev/null 2>>"$LOG"; then
+    log "开窗接管会话: $label ($sess)"
+  else
+    log "开窗失败: $label ($sess)。检查 系统设置 > 隐私与安全性 > 自动化 是否允许控制 iTerm2"
+    rm -f "$f"
+  fi
+}
+
+# 启动时先把已存在的会话全部认领，避免登录瞬间弹一堆窗口
+rm -f "$CLAIM_DIR"/*(N) "$PENDING"
+if lines="$(list_sessions)"; then
+  while IFS= read -r sess; do
+    [[ -n "$sess" ]] && claim "$sess" "$(label_of "$sess")"
+  done <<< "$lines"
+  log "watcher 启动，已认领现有会话"
+else
+  log "watcher 启动，UU 的 tmux 暂时不可用（UU 主程序可能没跑）"
+fi
+
+while :; do
+  sleep "$INTERVAL"
+
+  lines="$(list_sessions)" || continue
+
+  typeset -A live
+  live=()
+  while IFS= read -r sess; do
+    [[ -z "$sess" ]] && continue
+    live[$sess]=1
+    if [[ ! -f "$(claim_path "$sess")" ]]; then
+      # 没人挂着的新会话先不认领也不开窗：多半是 UU 在最后一个会话结束后自动补的空会话，
+      # 等手机真的打开它（客户端挂上来）再弹
+      [[ "$(attached_of "$sess")" == "0" ]] && continue
+      label="$(label_of "$sess")"
+      claim "$sess" "$label"
+      if pending_take; then
+        log "本地建的会话，不开窗: $label ($sess)"
+      else
+        open_window "$sess" "$label"
+      fi
+    fi
+  done <<< "$lines"
+
+  # 会话没了就撤销认领
+  for f in "$CLAIM_DIR"/*(N); do
+    sess="${f:t}"
+    if [[ -z "${live[$sess]:-}" ]]; then
+      rm -f "$f"
+      log "会话已结束，撤销认领: $sess"
+    fi
+  done
+done

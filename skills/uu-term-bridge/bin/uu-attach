@@ -1,0 +1,28 @@
+#!/bin/zsh
+# uu-term-bridge
+# 由 uu-term-watch 调用：在当前终端 attach 到 UU 自带 tmux 上的一个会话。
+# 参数是临时文件路径，第一行 tmux 会话名，第二行显示名（只用来设窗口标题）。
+# 走文件而不是命令行参数，是为了避开 AppleScript 里中文、空格、引号的多层转义。
+# 也可以直接给会话名：uu-attach uuremote-123456
+setopt no_unset
+MUX="${UUYC_MUX:-/Applications/UURemote.app/Contents/Helpers/tmux/uuyc-mux}"
+SOCK="${UUYC_SOCK:-${HOME}/Library/Application Support/UURemote/tmux.sock}"
+CONF="${UUYC_CONF:-/Applications/UURemote.app/Contents/Helpers/tmux/uuremote.conf}"
+
+sess=""
+label=""
+if [[ -n "${1:-}" ]]; then
+  if [[ -f "$1" ]]; then
+    { IFS= read -r sess; IFS= read -r label; } < "$1"
+    rm -f "$1"
+  else
+    sess="$1"
+  fi
+fi
+[[ -n "$sess" ]] || { print -u2 "用法: uu-attach <会话名 | 临时文件>"; exit 1 }
+
+[[ -n "$label" ]] && print -n "\e]0;${label}\a"
+if [[ -f "$CONF" ]]; then
+  exec "$MUX" -S "$SOCK" -f "$CONF" attach -t "$sess"
+fi
+exec "$MUX" -S "$SOCK" attach -t "$sess"

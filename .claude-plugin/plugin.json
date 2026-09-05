@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "minli-skill",
   "version": "0.1.0",
-  "description": "敏立的 Claude Code skill 合集：讲解视频流水线（explain-video）与公众号排版模板（wechat-publish-template）。",
+  "description": "敏立的 Claude Code skill 合集：讲解视频流水线（explain-video）、公众号排版模板（wechat-publish-template）、网易UU远程与 iTerm2 终端联动（uu-term-bridge）。",
   "author": {
     "name": "limin112"
   },
@@ -15,6 +15,9 @@
     "explainer-video",
     "tts",
     "ffmpeg",
-    "wechat"
+    "wechat",
+    "uu-remote",
+    "iterm2",
+    "tmux"
   ]
 }

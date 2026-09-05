@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.uu-term-bridge.watch</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>__HOME__/.local/bin/uu-term-watch</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>LANG</key>
+        <string>en_US.UTF-8</string>
+        <key>PATH</key>
+        <string>__PATH__</string>
+        <key>UUYC_CLI</key>
+        <string>__UUYC_CLI__</string>
+        <key>UUYC_MUX</key>
+        <string>__UUYC_MUX__</string>
+        <key>UUYC_SOCK</key>
+        <string>__UUYC_SOCK__</string>
+        <key>UU_WATCH_INTERVAL</key>
+        <string>2</string>
+        <key>UU_TERM_PROFILE</key>
+        <string></string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ProcessType</key>
+    <string>Interactive</string>
+    <key>StandardOutPath</key>
+    <string>__HOME__/.local/state/uu-term-bridge/stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>__HOME__/.local/state/uu-term-bridge/stderr.log</string>
+</dict>
+</plist>

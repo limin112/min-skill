@@ -1,0 +1,13 @@
+{
+  "Profiles": [
+    {
+      "Name": "UU 终端 (uu-term-bridge)",
+      "Guid": "uu-term-bridge",
+      "Dynamic Profile Parent Name": "Default",
+      "Custom Command": "Yes",
+      "Command": "__HOME__/.local/bin/uu-new",
+      "Close Sessions On End": true,
+      "Tags": ["uu-term-bridge"]
+    }
+  ]
+}

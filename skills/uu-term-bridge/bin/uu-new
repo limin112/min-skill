@@ -1,0 +1,64 @@
+#!/bin/zsh
+# uu-term-bridge
+# 给 iTerm2 profile 用的启动命令：把当前窗口/标签/分屏变成一个 UU 终端会话，手机端列表立刻可见。
+#   uu-new [名字]     名字默认 iTerm-时分秒-pid。UU 有时会无视给的名字改成 sessionN。
+#
+# 关掉这个窗口就结束对应的会话（和普通终端标签一样）。想让关窗口只断开、会话留着给手机接管，
+# 设 UU_TERM_KEEP=1（在 profile 的 Command 前加 env UU_TERM_KEEP=1）。
+# UU 没在跑、建会话失败时退回普通登录 shell，不会把你锁在外面。
+setopt no_unset
+CLI="${UUYC_CLI:-/Applications/UURemote.app/Contents/Helpers/uuyc-cli}"
+MUX="${UUYC_MUX:-/Applications/UURemote.app/Contents/Helpers/tmux/uuyc-mux}"
+SOCK="${UUYC_SOCK:-${HOME}/Library/Application Support/UURemote/tmux.sock}"
+STATE="${UU_BRIDGE_STATE:-${HOME}/.local/state/uu-term-bridge}"
+SHELL_BIN="${SHELL:-/bin/zsh}"
+KEEP="${UU_TERM_KEEP:-0}"
+
+fallback() {
+  print -u2 "uu-term-bridge: $1，退回普通 shell"
+  exec "$SHELL_BIN" -l
+}
+
+[[ -n "${UUYC_IN_MUX:-}" ]] && exec "$SHELL_BIN" -l
+[[ -x "$CLI" ]] || fallback "找不到 uuyc-cli"
+
+name="${1:-iTerm-$(date +%H%M%S)-$$}"
+mkdir -p "$STATE"
+# 告诉 watcher 接下来出现的一个新会话是本地建的，别弹窗。一行一个，连开多个也不会串
+date +%s >> "$STATE/pending"
+
+# 找出这个终端挂上去的 tmux 会话名，写进临时文件，关窗口时拿它来结束会话
+my_tty="$(tty 2>/dev/null || true)"
+sessfile="$(mktemp /tmp/uu-new.XXXXXXXX)"
+find_session() {
+  local i s
+  for i in {1..30}; do
+    s="$("$MUX" -S "$SOCK" list-clients -F '#{client_tty} #{session_name}' 2>/dev/null \
+        | awk -v t="$my_tty" '$1 == t { print $2; exit }')"
+    if [[ -n "$s" ]]; then print -r -- "$s" > "$sessfile"; return 0; fi
+    sleep 0.5
+  done
+}
+[[ -n "$my_tty" ]] && find_session &
+
+cleanup() {
+  local s=""
+  [[ -f "$sessfile" ]] && s="$(<"$sessfile")"
+  rm -f "$sessfile"
+  (( KEEP )) && return 0
+  [[ -n "$s" ]] && "$MUX" -S "$SOCK" kill-session -t "$s" 2>/dev/null
+  return 0
+}
+trap cleanup EXIT HUP INT TERM
+
+start=$(date +%s)
+"$CLI" lterm new "$name"
+rc=$?
+if (( rc != 0 && $(date +%s) - start < 3 )); then
+  # 没建起来，撤回 pending 里最后一行
+  [[ -f "$STATE/pending" ]] && sed -i '' '$d' "$STATE/pending"
+  trap - EXIT HUP INT TERM
+  rm -f "$sessfile"
+  fallback "建 UU 会话失败（UU 远程没在跑？）"
+fi
+exit $rc
