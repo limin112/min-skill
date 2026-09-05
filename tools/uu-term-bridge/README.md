@@ -83,6 +83,7 @@ source "/Users/you/.local/share/uu-term-bridge/uut.zsh"
 - `lterm new` 和 `lterm attach` 需要一个真正的 tty。
 - 最后一个会话结束后，UU 会自动补一个没人挂着的空会话。watcher 对没有客户端的新会话不弹窗，等手机真的打开它再弹。
 - UU 那层 tmux 的前缀键是 C-]，状态栏关着，鼠标开着。
+- 它的尺寸策略是 window-size latest，谁最后动谁说了算。UU 自己的本地镜像客户端带 ignore-size 标志，不参与尺寸决定；uu-attach 弹出来的 Mac 窗口同样带这个标志，尺寸始终跟着手机走。
 
 ## 验证过的环境
 

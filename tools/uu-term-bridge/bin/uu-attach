@@ -22,7 +22,9 @@ fi
 [[ -n "$sess" ]] || { print -u2 "用法: uu-attach <会话名 | 临时文件>"; exit 1 }
 
 [[ -n "$label" ]] && print -n "\e]0;${label}\a"
+# ignore-size：这个窗口只是手机会话在 Mac 上的镜像，不参与尺寸决定，尺寸始终跟着手机走。
+# UU 自己的本地镜像客户端也是这么做的，不加的话手机断开再进来会看到一个 Mac 尺寸的画面。
 if [[ -f "$CONF" ]]; then
-  exec "$MUX" -S "$SOCK" -f "$CONF" attach -t "$sess"
+  exec "$MUX" -S "$SOCK" -f "$CONF" attach -f ignore-size -t "$sess"
 fi
-exec "$MUX" -S "$SOCK" attach -t "$sess"
+exec "$MUX" -S "$SOCK" attach -f ignore-size -t "$sess"
