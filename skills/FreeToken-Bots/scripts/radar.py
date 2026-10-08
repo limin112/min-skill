@@ -65,7 +65,58 @@ def discover():
     return {'checked_at': dt.datetime.now(dt.timezone.utc).isoformat(),
             'eligible': [{'id': m['id'], 'context_length': m.get('context_length'), 'parameters_b': billion(m)} for m in qualifying],
             'needs_parameter_verification': [{'id': m['id'], 'context_length': m.get('context_length')} for m in pending],
+            'free_ids': sorted(m['id'] for m in free),
             'free_count': len(free)}
+
+class NotFreeError(RuntimeError):
+    """Raised when a model ID cannot be proven free. Never probe on uncertainty."""
+
+def free_ids():
+    """Exact OpenRouter IDs verified free by the latest scan.
+
+    Re-scans (public /models, no key needed) when the cache is missing,
+    unreadable, older than 24h, or predates the free_ids field. Free
+    eligibility is dynamic; a stale list must never authorize a call.
+    """
+    report = None
+    if CACHE.exists():
+        try:
+            report = json.loads(CACHE.read_text())
+            age = dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(report['checked_at'])
+            if age > dt.timedelta(hours=24) or 'free_ids' not in report:
+                report = None
+        except (ValueError, KeyError):
+            report = None
+    if report is None:
+        report = discover()
+        atomic_json(CACHE, report)
+    return set(report.get('free_ids', []))
+
+def resolve_free_model(requested):
+    """Fail-closed resolution of a user-supplied model ID to a verified-free exact ID.
+
+    - exact match in the latest free scan -> use as-is
+    - missing ':free' suffix but the suffixed form is verified free ->
+      auto-correct with a loud stderr warning (dropping ':free' silently
+      routes to the PAID variant of the same model)
+    - anything else -> raise NotFreeError; the caller must refuse the probe.
+      A pretty-printed, remembered, or hand-typed ID is not proof of free.
+    """
+    requested = (requested or '').strip()
+    known = free_ids()
+    if requested in known:
+        return requested
+    suffixed = requested if requested.endswith(':free') else requested + ':free'
+    if suffixed in known:
+        print(f'WARNING: "{requested}" is not a verified-free model ID; '
+              f'using verified-free "{suffixed}" instead. '
+              f'Calling "{requested}" directly would use the PAID variant.',
+              file=sys.stderr)
+        return suffixed
+    raise NotFreeError(
+        f'"{requested}" is not a verified-free OpenRouter model ID. '
+        'Probe refused: calling it could incur charges. '
+        'Use an exact ID from the latest scan report.')
 
 def probe(model_id, key):
     try:
@@ -107,7 +158,12 @@ def main():
     if a.command == 'probe':
         if not a.model or not os.getenv('OPENROUTER_API_KEY'):
             p.error('probe requires --model and OPENROUTER_API_KEY')
-        print(json.dumps(probe(a.model, os.environ['OPENROUTER_API_KEY']), indent=2))
+        try:
+            model = resolve_free_model(a.model)
+        except NotFreeError as exc:
+            print(f'error: {exc}', file=sys.stderr)
+            return 2
+        print(json.dumps(probe(model, os.environ['OPENROUTER_API_KEY']), indent=2))
         return
     report = discover()
     if a.command == 'scan':
@@ -125,4 +181,4 @@ def main():
     print(json.dumps(report, indent=2, ensure_ascii=False))
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

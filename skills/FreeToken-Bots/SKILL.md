@@ -1,7 +1,7 @@
 ---
 name: freetoken-bots
 description: Discover, verify, and maintain zero-priced OpenRouter models for Pi child-agent workflows used by Muse, Grokbot, or Dot. Use for free-model discovery, quota-safe Pi fallback, model recommendations, and daily health checks.
-version: 0.1.0
+version: 0.1.1
 ---
 
 # FreeToken-Bots
@@ -14,6 +14,7 @@ Pi is the execution layer; Muse, Grokbot and Dot may invoke it **only if they ca
 - Only classify **verified** total-parameter counts ≥100B as flagship. The `/models` API may omit parameter counts; in that case preserve the model in `needs_parameter_verification`, not the approved pool. Do not guess 100B from a model's name.
 - Require `tools` in `supported_parameters` for child-agent candidates; independently probe tool-calling before production use. An ordinary completion probe is **not** proof of tool support.
 - Never route to a paid model automatically. A 402, quota-exhausted response, or rate limit is not a reason to remove the user's existing Pi provider configuration.
+- **Fail-closed model resolution (v0.1.1):** `probe --model` never trusts a hand-typed ID. It is resolved against the latest free scan: an exact verified-free ID is used as-is; a missing `:free` suffix is auto-corrected with a loud warning (dropping it silently routes to the PAID variant — this exact mistake cost a live call once); any other ID is refused outright. A stale (>24h) scan is refreshed before resolving.
 - Do not put API keys in Git or print key values. Prompt for `OPENROUTER_API_KEY` if live probing is requested and unset.
 - Pi settings should not be rewritten without preserving user providers/defaults and validating the installed Pi's schema.
 - All unattended `pi -p` calls must use `</dev/null`.

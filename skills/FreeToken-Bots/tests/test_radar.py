@@ -13,3 +13,22 @@ class ModelTests(unittest.TestCase):
     def test_verified_parameters(self):
         self.assertTrue(radar.eligible({'id':'any','total_parameters':120000000000,'pricing':{'prompt':'0','completion':'0'},'supported_parameters':['tools']}))
 if __name__ == '__main__': unittest.main()
+
+class ResolveTests(unittest.TestCase):
+    """v0.1.1 fail-closed model resolution: never trust a hand-typed ID."""
+    def setUp(self):
+        self._orig = radar.free_ids
+        radar.free_ids = lambda: {'a/model:free', 'openrouter/free'}
+    def tearDown(self):
+        radar.free_ids = self._orig
+    def test_exact_id_used_asis(self):
+        self.assertEqual(radar.resolve_free_model('a/model:free'), 'a/model:free')
+    def test_missing_free_suffix_autocorrects(self):
+        # Dropping ':free' silently routes to the PAID variant; auto-correct loudly.
+        self.assertEqual(radar.resolve_free_model('a/model'), 'a/model:free')
+    def test_unknown_id_refused(self):
+        with self.assertRaises(radar.NotFreeError):
+            radar.resolve_free_model('x/paid-model')
+    def test_blank_id_refused(self):
+        with self.assertRaises(radar.NotFreeError):
+            radar.resolve_free_model('   ')
