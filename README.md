@@ -13,6 +13,7 @@ Skill：放在 `skills/` 下，Claude Code 加载后按需求自动触发。
 | Skill | 干什么 | 配套文章 |
 |---|---|---|
 | [**explain-video**](skills/explain-video) | 把一个概念做成**带旁白的讲解视频**：讨论 → 讲解框架 → HTML 幻灯 → 口播稿 → TTS 人声 → 字幕 → BGM → 录屏 → 合成 | 《从 0 手搓一条口播视频流水线》 |
+| [**freetoken-bots**](skills/FreeToken-Bots) | 每天自动扫描 OpenRouter 免费模型，给子代理配「零花费」模型路由：免费校验 + 参数量核验 + probe 试调用，fail-closed 绝不误触收费版 | [白嫖 OpenRouter 免费旗舰模型](https://x.com/MinLiBuilds/status/2108204485478953149?s=20) |
 | [**wechat-publish-template**](skills/wechat-publish-template) | 把 Markdown 转成可直接粘贴进公众号编辑器的 HTML（橙黑赛博朋克风） | [创建真正可用的 Skill 完整教程](https://x.com/MinLiBuilds/status/2055980925452968351?s=20) |
 | [**handwriting-stand-up**](skills/handwriting-stand-up) | 把**手写字录屏 / 照片**做成单文件 HTML 续集：字从纸上**立起来**成 3D，前面上演一段中世纪小人的故事，最后倒回纸上 | — |
 
@@ -35,7 +36,7 @@ mkdir -p .claude/skills
 cp -r /tmp/min-skill/skills/explain-video .claude/skills/explain-video
 ```
 
-换成 `wechat-publish-template`、`handwriting-stand-up` 同理。重启 Claude Code 生效。
+换成 `freetoken-bots`、`wechat-publish-template`、`handwriting-stand-up` 同理。重启 Claude Code 生效。
 
 ### 全部 skill 一起装
 
@@ -50,7 +51,7 @@ git clone https://github.com/limin112/min-skill.git .claude/skills/minli-skill
 
 ```bash
 claude plugin details minli-skill
-#   Skills (3)  explain-video, handwriting-stand-up, wechat-publish-template
+#   Skills (4)  explain-video, freetoken-bots, handwriting-stand-up, wechat-publish-template
 ```
 
 > **Windows cmd.exe 用户**：第 1 步改成 `cd /d %USERPROFILE%`，第 2 步原样跑就行（路径分隔符用 `/` 现代 git 也接受）。
