@@ -1,7 +1,7 @@
 ---
 name: freetoken-bots
 description: Discover, verify, and maintain zero-priced OpenRouter models for Pi child-agent workflows used by Muse, Grokbot, or Dot. Use for free-model discovery, quota-safe Pi fallback, model recommendations, and daily health checks.
-version: 0.1.1
+version: 0.1.2
 ---
 
 # FreeToken-Bots
@@ -42,9 +42,14 @@ python3 scripts/radar.py sync --dry-run
 6. For Muse/Grokbot/Dot use a controlled shell child-agent invocation. Confirm host supports executing a local Pi command, shared workspace access and result capture first. Never expose Pi's shell/API to the public internet without authentication.
 7. Ask user which model to use before major tasks; use automatic fallback only after user opts in. Never replay side-effectful actions after uncertain completion.
 
-## Scheduling
+## Scheduling (required, not optional)
 
-Run `python3 /absolute/path/to/scripts/radar.py scan` once daily with cron/launchd/systemd timer on the **machine running Pi**. A ChatGPT reminder/watch does not edit that machine. Compare daily reports for delisted or repriced models. Confirm repeated transient errors before marking unusable. Keep separate `eligible`, `needs_parameter_verification`, and inactive states.
+This skill does **not** scan by itself. A daily scan is **required** — without it the free-model list goes stale (free eligibility on OpenRouter is dynamic: models get delisted or repriced without notice).
+
+- Run `python3 /absolute/path/to/scripts/radar.py scan` **every day at 08:00 local time** on the machine running Pi. Use cron, launchd, or a systemd timer — pick one and keep it. Example cron: `0 8 * * * /usr/bin/python3 /path/to/scripts/radar.py scan`
+- **On install, tell the user explicitly:** "这个 skill 需要每天早上 8 点跑一次扫描定时任务，不配的话免费名单会过期，它自己不会动。" Do not present the skill as working without the timer.
+- Each run: compare against the previous report; surface newly listed free models, delisted models, repriced (no-longer-free) models, and any change to the `eligible` pool.
+- A ChatGPT reminder/watch does not edit that machine. Confirm repeated transient errors before marking a model unusable. Keep separate `eligible`, `needs_parameter_verification`, and inactive states.
 
 ## Model selection
 

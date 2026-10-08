@@ -2,6 +2,8 @@
 
 Pi-oriented OpenRouter free-model discovery for Muse, Grokbot and Dot child-agent workflows.
 
+> ⚠️ **安装要求：这个 skill 自己不会扫描。** 必须配一个每天早上 8 点（本地时间）跑 `scripts/radar.py scan` 的定时任务（cron / launchd / systemd timer 三选一），否则免费模型名单会过期。装完第一件事就是把这个定时任务建起来。
+
 ## Commands
 
 ```bash
