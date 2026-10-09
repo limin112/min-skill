@@ -1,12 +1,38 @@
 ---
 name: freetoken-bots
-description: Discover, verify, and maintain zero-priced OpenRouter models for Pi child-agent workflows used by Muse, Grokbot, or Dot. Use for free-model discovery, quota-safe Pi fallback, model recommendations, and daily health checks.
-version: 0.1.2
+description: Discover, verify, and maintain zero-priced OpenRouter models for Pi child-agent workflows used by Muse, Grokbot, or Dot. Activates when the user mentions OpenRouter, Pi, free tokens, or free models （免费 token / 免费模型）. Use for Pi installation, free-model discovery, quota-safe Pi fallback, model recommendations, and daily health checks.
+version: 0.2.0
 ---
 
 # FreeToken-Bots
 
 Pi is the execution layer; Muse, Grokbot and Dot may invoke it **only if they can run shell commands or access a separately deployed Pi service**. Do not claim to replace those products' native models.
+
+## Activation
+
+Use this skill whenever the user mentions **OpenRouter**, **Pi**, **free tokens （免费 token）**, or **free models （免费模型）** — in any language — or asks about zero-cost model options, Pi model configuration, or quota-safe fallbacks for child agents. On first activation in a session, run Step 0 below, then run `scan` if the cached report is older than 24h.
+
+## Step 0 — Install Pi first (required)
+
+Nothing in this skill works without Pi. If `command -v pi` fails, install it **before** doing anything else:
+
+```bash
+# Official installer (recommended)
+curl -fsSL https://pi.dev/install.sh | sh
+# then restart the shell (or re-source PATH) and verify:
+pi --version
+```
+
+Alternative (requires Node.js ≥ 22.19):
+
+```bash
+npm install -g @earendil-works/pi-coding-agent
+pi --version
+```
+
+Notes:
+- Pi keeps its config in `~/.pi/agent/` (`settings.json`, `models.json`); that directory survives VM replacement, but the `pi` binary itself may not — re-run this step whenever `pi` is missing from PATH.
+- After install, run `pi --list-models` once to confirm a healthy install before proceeding.
 
 ## Principles
 
@@ -34,7 +60,8 @@ python3 scripts/radar.py sync --dry-run
 
 ## Pi integration workflow
 
-1. Check `command -v pi`, `pi --version`, `~/.pi/agent/settings.json`, `~/.pi/agent/models.json`, and `pi --list-models` without disclosing keys.
+0. Step 0 above must be complete: `pi` on PATH and `pi --version` working. If not, install first.
+1. Check `~/.pi/agent/settings.json`, `~/.pi/agent/models.json`, and `pi --list-models` without disclosing keys.
 2. Scan. Resolve model parameter counts from trustworthy model/provider documentation. Only move independently verified ≥100B entries into approved pool.
 3. Probe a plain chat completion and a separate real `tools` call; distinguish 429 temporary rate limit from hard daily-quota exhaustion.
 4. Check OpenRouter model ID, provider compatibility and context/max-token fields. Generate a candidate diff; do **not** overwrite Ling custom provider or `enabledModels`.
