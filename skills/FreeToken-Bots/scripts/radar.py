@@ -118,17 +118,22 @@ def resolve_free_model(requested):
         'Probe refused: calling it could incur charges. '
         'Use an exact ID from the latest scan report.')
 
+def mask_key(text, key):
+    """Replace any occurrence of the API key in text so it is never printed."""
+    text = str(text)
+    return text.replace(key, '***') if key else text
+
 def probe(model_id, key):
     try:
         result = request(API + '/chat/completions', key,
             {'model': model_id, 'messages': [{'role': 'user', 'content': 'Reply PONG'}], 'max_tokens': 64}, timeout=35)
         if result.get('error'):
-            return {'ok': False, 'error': str(result['error'])[:300]}
+            return {'ok': False, 'error': mask_key(result['error'], key)[:300]}
         return {'ok': bool(result.get('choices')), 'error': None}
     except urllib.error.HTTPError as exc:
-        return {'ok': False, 'http_status': exc.code, 'error': str(exc)}
+        return {'ok': False, 'http_status': exc.code, 'error': mask_key(exc, key)[:300]}
     except (OSError, ValueError) as exc:
-        return {'ok': False, 'error': str(exc)[:300]}
+        return {'ok': False, 'error': mask_key(exc, key)[:300]}
 
 def atomic_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -163,7 +168,11 @@ def main():
         except NotFreeError as exc:
             print(f'error: {exc}', file=sys.stderr)
             return 2
-        print(json.dumps(probe(model, os.environ['OPENROUTER_API_KEY']), indent=2))
+        key = os.environ.get('OPENROUTER_API_KEY')
+        if not key:
+            print('error: OPENROUTER_API_KEY is not set. Provide it via the host\'s secure secret input; never paste it into chat.', file=sys.stderr)
+            return 2
+        print(json.dumps(probe(model, key), indent=2))
         return
     report = discover()
     if a.command == 'scan':

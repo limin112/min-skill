@@ -13,8 +13,10 @@ Pi-oriented OpenRouter free-model discovery for Muse, Grokbot and Dot child-agen
 ```bash
 python3 scripts/radar.py scan
 python3 scripts/radar.py status
-OPENROUTER_API_KEY='your-key' python3 scripts/radar.py probe --model 'exact-model-id'
+python3 scripts/radar.py probe --model 'exact-model-id'
 python3 scripts/radar.py sync --dry-run
 ```
+
+> 🔒 **Key 安全提示 / Key Security**：`probe` 仅从环境变量 `OPENROUTER_API_KEY` 读取密钥，切勿在聊天中直接粘贴 Key（例如 "我的key是..." 或 `OPENROUTER_API_KEY=...`）。若宿主提供受保护的 Secret 输入方式（如 Grok Bot 的 secret-request card），请通过该方式配置；若已在聊天中粘贴暴露，请立即前往 https://openrouter.ai/keys 轮换。
 
 Uses Python standard library only. `sync` does **not** mutate Pi yet: Pi schema detection, trusted parameter verification, separate tool-call probing and transactional config updates are planned follow-ups. Never install this expecting full unattended failover. The skill documents safe host-side integration steps.
