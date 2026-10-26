@@ -1,0 +1,154 @@
+{
+ "name": "Moss 口播剧组",
+ "look": "Moss：moss01 LoRA 的金发人物（文章里训练的那个），主讲时是成年造型：黑色圆领上衣，锁骨下一枚细线月亮纹身",
+ "note": "首帧都用 scripts/moss_image.py 在 docker3 上出（Moss 加 moss01 LoRA，其他角色用底模），挑好放 assets/cast/。仓库原带的 assets/avatar_ref.jpg（白背心）是原作者的数字人，NOTICE.md 明确不许用在自己的内容里，只能当效果参考",
+ "voice": {
+  "engine": "h3-native",
+  "note": "每个角色的音色写在 hosts.<id>.voice，每段一字不改，整片音色才稳"
+ },
+ "h3": {
+  "ssh_hosts": [
+   "worker2",
+   "worker2-ts"
+  ],
+  "lan_ip": "192.168.0.66",
+  "root": "/data/amin/h3",
+  "ports": [
+   8188,
+   8190
+  ],
+  "models": {
+   "fl2va": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+   "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+   "video_vae": "minimax_h3_video_vae_fp16.safetensors",
+   "audio_vae": "minimax_h3_audio_vae_fp32.safetensors"
+  },
+  "resolution": {
+   "9:16": {
+    "full": [
+     576,
+     1024
+    ],
+    "fast": [
+     480,
+     864
+    ]
+   },
+   "16:9": {
+    "full": [
+     1024,
+     576
+    ],
+    "fast": [
+     864,
+     480
+    ]
+   }
+  },
+  "steps": 20,
+  "seed": 20261027,
+  "pad_seconds": 1.5,
+  "minutes_per_unit": 23,
+  "minutes_note": "实测：Turbo 8 步 480×864 · 7–9 秒一段约 2–4.5 分钟（单段执行 130–270 秒），双卡 25 段约 45 分钟；原版 20 步 1024×576 · 15 秒约 23 分钟",
+  "solo_need_mb": 40000,
+  "share_need_mb": 14000,
+  "start_scripts": [
+   "start_comfy.sh",
+   "start_comfy_8190.sh"
+  ],
+  "default_gpus": 2,
+  "speed": {
+   "zh_cps": 5.0,
+   "en_wps": 2.6,
+   "note": "H3 实测后再校准（看 cut/qa.json 的说话时长）"
+  },
+  "accel": {
+   "lora": "minimax_h3_turbo_v4_step600_ema.safetensors",
+   "strength": 1.0,
+   "steps": 8,
+   "node": "custom_nodes/ComfyUI-MiniMax-H3-Turbo（Larryvrh，Apache-2.0）",
+   "download": "scripts/h3_setup_accel.sh"
+  }
+ },
+ "moss": {
+  "ssh_host": "docker3",
+  "gpus": [
+   0,
+   1
+  ],
+  "need_mb": 30000,
+  "weights": "/home/amin/models/MOSS-Image-Base",
+  "trainer": "/home/amin/moss-sfhq289-lora/vendor/kohakumoss-0.1.0",
+  "venv": "/home/amin/moss-sfhq289-lora/.venv-train",
+  "work": "/workspace/data/dh-koubo",
+  "loras": {
+   "moss01": "/workspace/data/moss-moss01-lora/runs/moss01-lora/export/moss01-lora-lycoris.safetensors"
+  },
+  "lora_weight": 1.0
+ },
+ "acts": {
+  "pip": "She talks to the camera like a friendly tech vlogger: warm eye contact, expressive eyebrows, small nods and one natural hand gesture near her chest.",
+  "full": "Warm eye contact, expressive face, natural hand gestures while explaining.",
+  "scene": "She speaks to the camera with confident, charismatic presence and a small natural gesture."
+ },
+ "disclosure": "内容由 AI 数字人演绎",
+ "languages_tested": {
+  "zh": "2026-10 H3 Turbo 实测 18 段，whisper 回听 79–100%（低分都是数字写法差异，不是念错）",
+  "en-GB": "6 段英式 RP，87–100%",
+  "note": "其他语言没测：先拍一段回听再批量"
+ },
+ "default_host": "moss",
+ "hosts": {
+  "moss": {
+   "name": "Moss（主讲）",
+   "ratio": "9:16",
+   "frames": {
+    "9:16": "assets/cast/moss_916.jpg",
+    "16:9": "assets/cast/moss_169.jpg"
+   },
+   "style": "Live-action, photorealistic",
+   "who": "the confident adult woman Moss in her late twenties with long loose wavy blonde hair, a fitted black scoop-neck top and a small fine-line crescent-moon tattoo on her upper chest",
+   "keep": "chest tattoo",
+   "voice": "young adult woman with a warm, bright, slightly husky voice and lively pace",
+   "sound": "Quiet room tone with soft fabric rustle and natural breathing between phrases."
+  },
+  "oliver": {
+   "name": "Oliver（黑框眼镜男搭档）",
+   "ratio": "9:16",
+   "pronoun": "he",
+   "frames": {
+    "9:16": "assets/cast/oliver_916.jpg"
+   },
+   "style": "Live-action, photorealistic",
+   "who": "the witty young British man Oliver with round black-rimmed glasses, tousled dark brown hair and a charcoal knit sweater over a white shirt",
+   "keep": "glasses",
+   "voice": "young British man with a dry, amused baritone voice and quick comic timing"
+  },
+  "hoot": {
+   "name": "Hoot 教授（猫头鹰）",
+   "ratio": "16:9",
+   "pronoun": "it",
+   "frames": {
+    "16:9": "assets/cast/hoot_169.jpg"
+   },
+   "style": "3D animated, Pixar-style render",
+   "who": "the cute fluffy snowy owl Professor Hoot wearing tiny round gold glasses and a striped scarf, perched on a stack of old books",
+   "keep": "glasses and scarf",
+   "mouth": "beak",
+   "voice": "small elderly owl professor with a soft, scratchy, cheerful voice",
+   "sound": "Crackling candles, a soft page turn and a gentle feather ruffle."
+  },
+  "chibi": {
+   "name": "Q 版 Moss（二次元）",
+   "ratio": "9:16",
+   "frames": {
+    "9:16": "assets/cast/chibi_916.jpg"
+   },
+   "style": "2D anime, clean cel-shaded animation",
+   "who": "the cheerful chibi anime witch girl with long wavy blonde hair, a dark green ribbon and a crescent-moon hairclip, holding a tiny glowing graphics card",
+   "keep": "hairclip",
+   "voice": "tiny, high-pitched, bubbly anime girl voice",
+   "sound": "A sparkling magical chime and soft twinkles."
+  }
+ }
+}

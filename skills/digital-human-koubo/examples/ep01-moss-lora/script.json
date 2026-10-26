@@ -1,0 +1,206 @@
+[
+ {
+  "id": "s01",
+  "host": "moss",
+  "shot": "scene",
+  "frame": "frames/moss_london.jpg",
+  "lang": "en-GB",
+  "t": "Good evening. I'm Moss. Small confession: I don't actually exist. I was trained on fifty-six pictures and one rather tired graphics card.",
+  "sound": "Light rain patters on wet cobblestones, a distant red bus rumbles past and footsteps splash softly.",
+  "act": "She stands in the drizzle, tilts her head with a knowing half-smile and raises one eyebrow on the confession.",
+  "zh": "晚上好，我是 Moss。坦白一件小事：我其实并不存在。我是用五十六张图片和一张累坏了的显卡训练出来的。"
+ },
+ {
+  "id": "s02",
+  "host": "oliver",
+  "shot": "pip",
+  "lang": "en-GB",
+  "t": "Brilliant. Shall we do the rest in Mandarin? Half our viewers are in China.",
+  "act": "He pushes his glasses up his nose, then gives a quick conspiratorial grin.",
+  "zh": "太棒了。剩下的用中文讲吧？我们一半的观众在中国。"
+ },
+ {
+  "id": "s03",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "没问题，接下来说中文。这一期教你两件事：怎么训练出一个我，再怎么让我开口讲课。",
+  "act": "She laughs lightly, switches into a confident presenter mode and counts two on her fingers."
+ },
+ {
+  "id": "s04",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "通用模型什么都会画，但它不认识你心里的那个人。LoRA，就是给模型补上这一小块记忆。"
+ },
+ {
+  "id": "s05",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "我的五十六张训练照，全是 GPT Image 2 画的。训练只跑了一个小时，挑照片却花了三个多小时。",
+  "act": "She widens her eyes in mock exhaustion on the last phrase."
+ },
+ {
+  "id": "s05b",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "做法是：先给 GPT Image 2 一张定妆照，再按清单出不同发型、衣服和角度。六十八张里删掉重复的，留下五十六张。"
+ },
+ {
+  "id": "s06",
+  "host": "hoot",
+  "shot": "scene",
+  "lang": "zh",
+  "t": "咕咕！每张图都要配一句描述，叫 caption。开头写触发词 moss 零一，后面写发型、衣服和场景。",
+  "sub": "咕咕！每张图都要配一句描述，叫 caption。开头写触发词 moss01，后面写发型、衣服和场景。",
+  "act": "The owl flaps one wing like a lecturer pointing at a blackboard and bobs its head."
+ },
+ {
+  "id": "s07",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "划重点：caption 里写进去的，模型当成可以换的东西；没写的，才会被记成她本人。",
+  "act": "She leans closer to the camera and taps the air once for emphasis."
+ },
+ {
+  "id": "s07b",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "这次用标签式 caption：触发词、构图、表情、发型、衣服、场景，逗号隔开，简单好改。"
+ },
+ {
+  "id": "s08",
+  "host": "moss",
+  "shot": "scene",
+  "frame": "frames/moss_server.jpg",
+  "lang": "zh",
+  "t": "一张 4090，四十八 G 显存，一千二百步，六十五分钟。第三百步，它就认出我了。",
+  "sound": "A steady low hum of GPU fans and the faint electrical buzz of a server room."
+ },
+ {
+  "id": "s09",
+  "host": "oliver",
+  "shot": "pip",
+  "lang": "en-GB",
+  "t": "Step three hundred, and she already looks like... well, her. Slightly terrifying.",
+  "act": "He leans back in mock alarm, then shrugs with a dry smile.",
+  "zh": "第三百步，她就已经像……嗯，她本人了。有点吓人。"
+ },
+ {
+  "id": "s10",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "但验收时有个意外：加上 LoRA 以后，就算不写触发词，画出来的人也全变成了我。",
+  "act": "She covers her mouth briefly in surprise, then laughs."
+ },
+ {
+  "id": "s11",
+  "host": "chibi",
+  "shot": "pip",
+  "lang": "zh",
+  "seconds": 5,
+  "t": "全世界都变成我啦！",
+  "act": "She jumps with joy and throws both arms up, sparkles bursting around her."
+ },
+ {
+  "id": "s12",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "原因很简单：训练集里只有我一个人。想让模型学会区分，就加一批不带触发词的正则图。"
+ },
+ {
+  "id": "s13",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "还有，Loss 别盯太紧。它一直在零点四到零点六五之间乱跳，效果要看固定测试图。",
+  "act": "She waves one hand dismissively, then points down as if at a chart."
+ },
+ {
+  "id": "s13b",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "我最后留了两个版本：第三百步，泄漏最轻；第九百步，更像我。按需要选就行。"
+ },
+ {
+  "id": "s13c",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "练好的 LoRA 一条命令导出给 ComfyUI。同一个种子，原模型、不写触发词、写触发词，三张并排一比就清楚。"
+ },
+ {
+  "id": "s14",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "照片有了，怎么让我开口？用本地的 MiniMax H3：一张首帧加一句台词，画面和声音一起出来。"
+ },
+ {
+  "id": "s15",
+  "host": "oliver",
+  "shot": "pip",
+  "lang": "en-GB",
+  "t": "No cloud credits. Just two graphics cards humming away in a cupboard.",
+  "act": "He nods proudly, gesturing sideways with his thumb.",
+  "zh": "不用云端积分。只有两张显卡在柜子里嗡嗡转。"
+ },
+ {
+  "id": "s16",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "每段十秒左右。加速 LoRA 把二十步降到八步，生成完用 whisper 逐字回听，念错就自动重拍。"
+ },
+ {
+  "id": "s17",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "zh",
+  "t": "最后交给 Remotion 剪辑：字幕、配图、画中画全是代码，一条命令出片。",
+  "act": "She snaps her fingers on the last phrase with a satisfied smile."
+ },
+ {
+  "id": "s17b",
+  "host": "oliver",
+  "shot": "pip",
+  "lang": "en-GB",
+  "t": "And the whole pipeline lives in one skill. Our editor is, technically, a robot.",
+  "act": "He leans in and whispers the last words behind his hand.",
+  "zh": "整条流水线就装在一个 skill 里。我们的剪辑师，严格来说，是个机器人。"
+ },
+ {
+  "id": "s18",
+  "host": "moss",
+  "shot": "scene",
+  "frame": "frames/moss_library.jpg",
+  "lang": "zh",
+  "t": "文章、训练笔记本、ComfyUI 工作流，还有做这条视频的整套 skill，全部开源在 GitHub。",
+  "sound": "Candles crackle softly and glowing photographs flutter like paper in the air."
+ },
+ {
+  "id": "s19",
+  "host": "hoot",
+  "shot": "scene",
+  "lang": "zh",
+  "t": "咕！链接放在评论区，记得亲手跑一遍。",
+  "act": "The owl winks and gives a little hop on the books."
+ },
+ {
+  "id": "s20",
+  "host": "moss",
+  "shot": "pip",
+  "lang": "en-GB",
+  "t": "Train your own. Just don't make her prettier than me. Cheerio!",
+  "act": "She gives a playful wink and a small wave goodbye.",
+  "zh": "去训练你自己的吧。只是别把她画得比我还好看。再见啦！"
+ }
+]

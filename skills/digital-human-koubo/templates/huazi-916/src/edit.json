@@ -1,0 +1,299 @@
+{
+ "preset": "标准",
+ "title": {
+  "left": "真实体验",
+  "right": "我为什么推荐 Renoise"
+ },
+ "brand": "orange",
+ "chapters": [
+  {
+   "at": "1:",
+   "t": "不臃肿 · 好上手"
+  },
+  {
+   "at": "4:",
+   "t": "隐私：MCP vs CLI"
+  },
+  {
+   "at": "8:",
+   "t": "出片效果"
+  },
+  {
+   "at": "10:",
+   "t": "接入方便"
+  }
+ ],
+ "keys": [
+  "Renoise",
+  "Higgsfield",
+  "最大的区别",
+  "太臃肿",
+  "体验最好",
+  "MCP",
+  "CLI",
+  "不会提醒你",
+  "积分消耗",
+  "隐私",
+  "毫无保留",
+  "抽卡",
+  "复刻功能",
+  "起号",
+  "太方便了",
+  "Claude",
+  "Codex",
+  "特别好用",
+  "强烈建议",
+  "去试试"
+ ],
+ "emojis": [
+  {
+   "at": "1:安利",
+   "e": "😍",
+   "side": "r"
+  },
+  {
+   "at": "1:最大的区别",
+   "e": "🤔",
+   "side": "l"
+  },
+  {
+   "at": "2:太臃肿",
+   "e": "😵‍💫",
+   "side": "r"
+  },
+  {
+   "at": "3:体验最好",
+   "e": "🤩",
+   "side": "r"
+  },
+  {
+   "at": "4:不会提醒你",
+   "e": "🤫",
+   "side": "l"
+  },
+  {
+   "at": "5:积分消耗",
+   "e": "😱",
+   "side": "r"
+  },
+  {
+   "at": "6:毫无保留",
+   "e": "🤯",
+   "side": "l"
+  },
+  {
+   "at": "7:Opus",
+   "e": "🚀",
+   "side": "r"
+  },
+  {
+   "at": "9:太方便",
+   "e": "💯",
+   "side": "r"
+  },
+  {
+   "at": "10:特别好用",
+   "e": "🔥",
+   "side": "l"
+  },
+  {
+   "at": "11:去试试",
+   "e": "👋",
+   "side": "l",
+   "y": 760
+  }
+ ],
+ "punch": [
+  "1:最大",
+  "2:太臃肿",
+  "3:体验最好",
+  "6:毫无保留",
+  "7:速度",
+  "9:太方便",
+  "11:强烈建议"
+ ],
+ "cards": [
+  {
+   "type": "vs",
+   "at": "1:Renoise",
+   "left": {
+    "at": "1:Renoise",
+    "t": "Renoise"
+   },
+   "right": {
+    "at": "1:Higgsfield",
+    "t": "Higgsfield"
+   },
+   "until": "1:end"
+  },
+  {
+   "type": "slam",
+   "at": "2:太臃肿",
+   "text": "太臃肿！",
+   "color": "red"
+  },
+  {
+   "type": "list",
+   "at": "6:隐私",
+   "title": "隐私对比（网友分析）",
+   "items": [
+    {
+     "t": "MCP：调用前先说明",
+     "tone": "good"
+    },
+    {
+     "t": "CLI：不会提醒你",
+     "tone": "bad",
+     "at": "6:毫无保留"
+    }
+   ]
+  },
+  {
+   "type": "stamp",
+   "at": "8:抽卡",
+   "text": "不用抽卡",
+   "color": "green"
+  },
+  {
+   "type": "big",
+   "at": "9:起号",
+   "text": "起号神器"
+  },
+  {
+   "type": "tags",
+   "at": "10:",
+   "title": "让 agent 帮你调用 Renoise",
+   "items": [
+    {
+     "at": "10:Claude",
+     "t": "Claude Code"
+    },
+    {
+     "at": "10:Codex",
+     "t": "Codex"
+    },
+    {
+     "at": "10:豆包",
+     "t": "豆包"
+    },
+    {
+     "at": "10:WorkBuddy",
+     "t": "WorkBuddy"
+    }
+   ],
+   "until": "11:就是豆包"
+  },
+  {
+   "type": "bars",
+   "at": "11:就是豆包",
+   "until": "11:强烈建议",
+   "title": "速度对比 · 个人体验",
+   "items": [
+    {
+     "t": "Claude Code",
+     "v": 0.95,
+     "label": "快"
+    },
+    {
+     "t": "Codex",
+     "v": 0.92,
+     "label": "快"
+    },
+    {
+     "t": "豆包",
+     "v": 0.62,
+     "label": "也能用"
+    },
+    {
+     "t": "WorkBuddy",
+     "v": 0.6,
+     "label": "也能用"
+    }
+   ]
+  }
+ ],
+ "showcase": [
+  {
+   "from": "8:尤其",
+   "to": "8:end",
+   "note": "作品均由 Renoise 生成",
+   "items": [
+    {
+     "src": "show/whitecat.mp4",
+     "label": "白猫骑扫地机 · 复刻"
+    },
+    {
+     "src": "show/catdrums.mp4",
+     "label": "胖橘打鼓 · 复刻"
+    },
+    {
+     "src": "show/soya.mp4",
+     "label": "竖屏 · 短视频",
+     "ratio": "9:16"
+    }
+   ]
+  }
+ ],
+ "cta": {
+  "at": "11:强烈建议",
+  "text": "强烈建议",
+  "sub": "去试试 Renoise",
+  "subAt": "11:去试试"
+ },
+ "music": {
+  "src": "music/bgm.mp3",
+  "vol": 0.075
+ },
+ "pack": [
+  {
+   "use": "Danmaku",
+   "items": [
+    {
+     "t": "真的假的",
+     "at": "3:"
+    },
+    {
+     "t": "这么方便？",
+     "at": "3:不是专业",
+     "hot": true
+    },
+    {
+     "t": "求链接",
+     "at": "3:体验最好"
+    }
+   ]
+  },
+  {
+   "use": "Counter",
+   "at": "5:积分消耗",
+   "dur": 1.0,
+   "to": 170,
+   "unit": "积分",
+   "label": "一条 10 秒短片约"
+  },
+  {
+   "use": "PollPop",
+   "at": "9:",
+   "until": "9:end",
+   "question": "你会用数字人起号吗？",
+   "options": [
+    {
+     "n": "1",
+     "t": "会",
+     "at": "9:起号"
+    },
+    {
+     "n": "2",
+     "t": "再看看",
+     "at": "9:end"
+    }
+   ]
+  },
+  {
+   "use": "GlitchInterstitial",
+   "at": "10:",
+   "dur": 0.5,
+   "text": "点赞关注"
+  }
+ ]
+}

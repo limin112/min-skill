@@ -16,6 +16,7 @@ Skill：放在 `skills/` 下，Claude Code 加载后按需求自动触发。
 | [**freetoken-bots**](skills/FreeToken-Bots) | 每天自动扫描 OpenRouter 免费模型，给子代理配「零花费」模型路由：免费校验 + 参数量核验 + probe 试调用，fail-closed 绝不误触收费版 | [白嫖 OpenRouter 免费旗舰模型](https://x.com/MinLiBuilds/status/2108204485478953149?s=20) |
 | [**wechat-publish-template**](skills/wechat-publish-template) | 把 Markdown 转成可直接粘贴进公众号编辑器的 HTML（橙黑赛博朋克风） | [创建真正可用的 Skill 完整教程](https://x.com/MinLiBuilds/status/2055980925452968351?s=20) |
 | [**handwriting-stand-up**](skills/handwriting-stand-up) | 把**手写字录屏 / 照片**做成单文件 HTML 续集：字从纸上**立起来**成 3D，前面上演一段中世纪小人的故事，最后倒回纸上 | — |
+| [**digital-human-koubo**](skills/digital-human-koubo) | **本地开源数字人口播**：MOSS-Image + 人物 LoRA 出角色 → MiniMax H3（Turbo 8 步、双卡）分段生成「画面 + 原生配音」→ whisper 回听 → Remotion 剪辑。多角色同台、英式英语切普通话、双语字幕；例子是一条 3 分半的「MOSS 魔法学院」LoRA 教程 | [MOSS-Image 人物 LoRA 教程](https://x.com/MinLiBuilds/status/2114617833787470247?s=20) |
 
 工具：放在 `tools/` 下，是独立的命令行程序，Claude Code 不会加载它们，按各自 README 手动安装。
 
@@ -36,7 +37,7 @@ mkdir -p .claude/skills
 cp -r /tmp/min-skill/skills/explain-video .claude/skills/explain-video
 ```
 
-换成 `freetoken-bots`、`wechat-publish-template`、`handwriting-stand-up` 同理。重启 Claude Code 生效。
+换成 `freetoken-bots`、`wechat-publish-template`、`handwriting-stand-up`、`digital-human-koubo` 同理。重启 Claude Code 生效。
 
 ### 全部 skill 一起装
 
@@ -51,7 +52,7 @@ git clone https://github.com/limin112/min-skill.git .claude/skills/minli-skill
 
 ```bash
 claude plugin details minli-skill
-#   Skills (4)  explain-video, freetoken-bots, handwriting-stand-up, wechat-publish-template
+#   Skills (5)  digital-human-koubo, explain-video, freetoken-bots, handwriting-stand-up, wechat-publish-template
 ```
 
 > **Windows cmd.exe 用户**：第 1 步改成 `cd /d %USERPROFILE%`，第 2 步原样跑就行（路径分隔符用 `/` 现代 git 也接受）。
@@ -89,6 +90,7 @@ Skill 不用记命令，直接说需求，Claude 识别到就会触发：
 - “帮我做一条讲解视频，主题是 XXX” → `explain-video`
 - “把 `draft.md` 转成公众号” → `wechat-publish-template`
 - “把这个视频里的手写字立起来，讲个故事” → `handwriting-stand-up`
+- “用 Moss 讲解这篇文章” / “做个数字人口播” → `digital-human-koubo`
 
 工具装完按它 README 里说的用，和 Claude Code 无关。
 
@@ -100,6 +102,7 @@ Skill 不用记命令，直接说需求，Claude 识别到就会触发：
 min-skill/
 ├── .claude-plugin/plugin.json      ← 让整个文件夹作为一个 skill 合集被加载
 ├── skills/                         ← Claude Code 加载的 skill
+│   ├── digital-human-koubo/        ← SKILL.md + scripts/ + references/ + templates/ + assets/ + examples/
 │   ├── explain-video/              ← SKILL.md + scripts/ + references/
 │   ├── handwriting-stand-up/       ← SKILL.md + engine/ + scripts/ + references/ + examples/
 │   └── wechat-publish-template/    ← SKILL.md + assets/ + references/ + evals/

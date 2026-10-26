@@ -1,0 +1,103 @@
+// @ts-nocheck
+
+import type { Variants } from "../motion-shim";
+import { motion, useAnimation } from "../motion-shim";
+import type { HTMLAttributes } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+
+import { cn } from "../cn";
+
+export interface FeatherIconHandle {
+  startAnimation: () => void;
+  stopAnimation: () => void;
+}
+
+interface FeatherIconProps extends HTMLAttributes<HTMLDivElement> {
+  size?: number;
+}
+
+const FEATHER_VARIANTS: Variants = {
+  normal: {
+    rotate: 0,
+    y: 0,
+    x: 0,
+  },
+  animate: {
+    rotate: [0, -8, 4, -3, 0],
+    y: [0, -4, -2, -1, 0],
+    x: [0, 2, -2, 1, 0],
+    transition: {
+      duration: 1.6,
+      ease: "easeInOut",
+    },
+  },
+};
+
+const FeatherIcon = forwardRef<FeatherIconHandle, FeatherIconProps>(
+  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+    const controls = useAnimation();
+    const isControlledRef = useRef(false);
+
+    useImperativeHandle(ref, () => {
+      isControlledRef.current = true;
+
+      return {
+        startAnimation: () => controls.start("animate"),
+        stopAnimation: () => controls.start("normal"),
+      };
+    });
+
+    const handleMouseEnter = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onMouseEnter?.(e);
+        } else {
+          controls.start("animate");
+        }
+      },
+      [controls, onMouseEnter]
+    );
+
+    const handleMouseLeave = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onMouseLeave?.(e);
+        } else {
+          controls.start("normal");
+        }
+      },
+      [controls, onMouseLeave]
+    );
+
+    return (
+      <div
+        className={cn(className)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        {...props}
+      >
+        <motion.svg
+          animate={controls}
+          fill="none"
+          height={size}
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          variants={FEATHER_VARIANTS}
+          viewBox="0 0 24 24"
+          width={size}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z" />
+          <path d="M16 8 2 22" />
+          <path d="M17.5 15H9" />
+        </motion.svg>
+      </div>
+    );
+  }
+);
+
+FeatherIcon.displayName = "FeatherIcon";
+
+export { FeatherIcon };

@@ -1,0 +1,141 @@
+// @ts-nocheck
+
+import type { Variants } from "../motion-shim";
+import { motion, useAnimation } from "../motion-shim";
+import type { HTMLAttributes } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+
+import { cn } from "../cn";
+
+export interface SwissFrancIconHandle {
+  startAnimation: () => void;
+  stopAnimation: () => void;
+}
+
+interface SwissFrancIconProps extends HTMLAttributes<HTMLDivElement> {
+  size?: number;
+}
+
+const FRANC_MAIN_VARIANTS: Variants = {
+  normal: {
+    opacity: 1,
+    pathLength: 1,
+    transition: {
+      duration: 0.4,
+      opacity: { duration: 0.1 },
+    },
+  },
+  animate: {
+    opacity: [0, 1],
+    pathLength: [0, 1],
+    transition: {
+      duration: 0.6,
+      opacity: { duration: 0.1 },
+    },
+  },
+};
+
+const FRANC_SECONDARY_VARIANTS: Variants = {
+  normal: {
+    opacity: 1,
+    pathLength: 1,
+    pathOffset: 0,
+    transition: {
+      delay: 0.3,
+      duration: 0.3,
+      opacity: { duration: 0.1, delay: 0.3 },
+    },
+  },
+  animate: {
+    opacity: [0, 1],
+    pathLength: [0, 1],
+    pathOffset: [1, 0],
+    transition: {
+      delay: 0.5,
+      duration: 0.4,
+      opacity: { duration: 0.1, delay: 0.5 },
+    },
+  },
+};
+
+const SwissFrancIcon = forwardRef<SwissFrancIconHandle, SwissFrancIconProps>(
+  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+    const controls = useAnimation();
+    const isControlledRef = useRef(false);
+
+    useImperativeHandle(ref, () => {
+      isControlledRef.current = true;
+
+      return {
+        startAnimation: () => controls.start("animate"),
+        stopAnimation: () => controls.start("normal"),
+      };
+    });
+
+    const handleMouseEnter = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onMouseEnter?.(e);
+        } else {
+          controls.start("animate");
+        }
+      },
+      [controls, onMouseEnter]
+    );
+
+    const handleMouseLeave = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onMouseLeave?.(e);
+        } else {
+          controls.start("normal");
+        }
+      },
+      [controls, onMouseLeave]
+    );
+
+    return (
+      <div
+        className={cn(className)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        {...props}
+      >
+        <svg
+          fill="none"
+          height={size}
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width={size}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <motion.path
+            animate={controls}
+            d="M10 21V3h8"
+            initial="normal"
+            variants={FRANC_MAIN_VARIANTS}
+          />
+          <motion.path
+            animate={controls}
+            d="M6 16h9"
+            initial="normal"
+            variants={FRANC_SECONDARY_VARIANTS}
+          />
+          <motion.path
+            animate={controls}
+            d="M10 9.5h7"
+            initial="normal"
+            variants={FRANC_SECONDARY_VARIANTS}
+          />
+        </svg>
+      </div>
+    );
+  }
+);
+
+SwissFrancIcon.displayName = "SwissFrancIcon";
+
+export { SwissFrancIcon };

@@ -1,0 +1,112 @@
+// @ts-nocheck
+
+import type { Variants } from "../motion-shim";
+import { motion, useAnimation } from "../motion-shim";
+import type { HTMLAttributes } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+
+import { cn } from "../cn";
+
+export interface DrumIconHandle {
+  startAnimation: () => void;
+  stopAnimation: () => void;
+}
+
+interface DrumIconProps extends HTMLAttributes<HTMLDivElement> {
+  size?: number;
+}
+
+const VARIANTS: Variants = {
+  normal: {
+    rotate: 0,
+  },
+  animate: (custom: number) => ({
+    rotate: custom === 1 ? [-10, 10, 0] : [10, -10, 0],
+    transition: {
+      delay: 0.1 * custom,
+      repeat: Number.POSITIVE_INFINITY,
+      repeatType: "reverse",
+      duration: 0.5,
+    },
+  }),
+};
+
+const DrumIcon = forwardRef<DrumIconHandle, DrumIconProps>(
+  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+    const controls = useAnimation();
+    const isControlledRef = useRef(false);
+
+    useImperativeHandle(ref, () => {
+      isControlledRef.current = true;
+
+      return {
+        startAnimation: () => controls.start("animate"),
+        stopAnimation: () => controls.start("normal"),
+      };
+    });
+
+    const handleMouseEnter = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onMouseEnter?.(e);
+        } else {
+          controls.start("animate");
+        }
+      },
+      [controls, onMouseEnter]
+    );
+
+    const handleMouseLeave = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onMouseLeave?.(e);
+        } else {
+          controls.start("normal");
+        }
+      },
+      [controls, onMouseLeave]
+    );
+    return (
+      <div
+        className={cn(className)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        {...props}
+      >
+        <svg
+          fill="none"
+          height={size}
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width={size}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <motion.path
+            animate={controls}
+            custom={1}
+            d="m2 2 8 8"
+            variants={VARIANTS}
+          />
+          <motion.path
+            animate={controls}
+            custom={2}
+            d="m22 2-8 8"
+            variants={VARIANTS}
+          />
+          <ellipse cx="12" cy="9" rx="10" ry="5" />
+          <path d="M7 13.4v7.9" />
+          <path d="M12 14v8" />
+          <path d="M17 13.4v7.9" />
+          <path d="M2 9v8a10 5 0 0 0 20 0V9" />
+        </svg>
+      </div>
+    );
+  }
+);
+
+DrumIcon.displayName = "DrumIcon";
+
+export { DrumIcon };

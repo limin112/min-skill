@@ -1,0 +1,392 @@
+[
+ {
+  "id": "L_en",
+  "lang": "en",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   4.8
+  ],
+  "keep": 5.04,
+  "src_dur": 5.04,
+  "vert": true,
+  "heard": "Hi, I'm an AI digital human and I can speak your language."
+ },
+ {
+  "id": "L_ja",
+  "lang": "ja",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   4.04
+  ],
+  "keep": 4.39,
+  "src_dur": 5.04,
+  "vert": true,
+  "heard": "こんにちは 私はAI デジタルヒューマンです"
+ },
+ {
+  "id": "L_ko",
+  "lang": "ko",
+  "acc": 0.941,
+  "speech": [
+   0.0,
+   4.88
+  ],
+  "keep": 5.04,
+  "src_dur": 5.04,
+  "vert": true,
+  "heard": " 안녕하세요. 저는 AI디지털 휴면이에요."
+ },
+ {
+  "id": "L_fr",
+  "lang": "fr",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   4.16
+  ],
+  "keep": 4.51,
+  "src_dur": 5.04,
+  "vert": true,
+  "heard": "Bonjour, je suis une humaine numérique créée par l'IA."
+ },
+ {
+  "id": "L_es",
+  "lang": "es",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   4.18
+  ],
+  "keep": 4.53,
+  "src_dur": 5.04,
+  "vert": false,
+  "heard": "Hola, soy un humano digital hecho con IA."
+ },
+ {
+  "id": "L_ar",
+  "lang": "ar",
+  "acc": 0.987,
+  "speech": [
+   0.0,
+   4.28
+  ],
+  "keep": 4.63,
+  "src_dur": 5.04,
+  "vert": false,
+  "heard": "مرحباً أنا إنسان رقمي صانعه الذكاء الاصطناعي"
+ },
+ {
+  "id": "t1",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   8.8
+  ],
+  "keep": 9.04,
+  "src_dur": 9.04,
+  "vert": true,
+  "heard": "\"上一期,我教你做出了我。这一期升级,让数字人说外语、进场景、换角色,还请来一位新同事。\""
+ },
+ {
+  "id": "t3",
+  "lang": "zh",
+  "acc": 0.982,
+  "speech": [
+   0.0,
+   7.96
+  ],
+  "keep": 8.04,
+  "src_dur": 8.04,
+  "vert": true,
+  "heard": "从上期还留了一个坑。换了声音,口型就对不准。接下来,请我的同事接棒。"
+ },
+ {
+  "id": "u1",
+  "lang": "zh",
+  "acc": 0.969,
+  "speech": [
+   0.1,
+   7.6
+  ],
+  "keep": 7.95,
+  "src_dur": 8.04,
+  "vert": false,
+  "heard": "大家好,我是他的同事,也是数字人。不一样的是,我是用我本人的一张照片做的。"
+ },
+ {
+  "id": "u2",
+  "lang": "zh",
+  "acc": 0.964,
+  "speech": [
+   0.04,
+   7.68
+  ],
+  "keep": 8.03,
+  "src_dur": 8.04,
+  "vert": false,
+  "heard": "你看这张照片,横屏、正脸、背景干净。横屏照片直接就能生成含屏口播。"
+ },
+ {
+  "id": "u3",
+  "lang": "zh",
+  "acc": 0.938,
+  "speech": [
+   0.0,
+   10.0
+  ],
+  "keep": 10.04,
+  "src_dur": 10.04,
+  "vert": false,
+  "heard": "先说那个\"坑\",Grock的口型跟的是他自己的声音,所以最稳的做法是直接让他用目标语言开口。"
+ },
+ {
+  "id": "u4",
+  "lang": "zh",
+  "acc": 0.989,
+  "speech": [
+   0.12,
+   10.22
+  ],
+  "keep": 10.57,
+  "src_dur": 11.04,
+  "vert": false,
+  "heard": "如果一定要用你自己的录音, 就换一个音频驱动口型的模型,比如\"Omni-human\",一张照片加一段录音。"
+ },
+ {
+  "id": "u5",
+  "lang": "zh",
+  "acc": 0.975,
+  "speech": [
+   0.0,
+   9.52
+  ],
+  "keep": 9.87,
+  "src_dur": 10.04,
+  "vert": false,
+  "heard": "升级一,多语言,想让数字人说英语、日语、韩语,只要在提示词里写清楚语言,台词直接用纳门语言写。"
+ },
+ {
+  "id": "u6",
+  "lang": "zh",
+  "acc": 0.957,
+  "speech": [
+   0.0,
+   8.76
+  ],
+  "keep": 9.04,
+  "src_dur": 9.04,
+  "vert": false,
+  "heard": "他注意,别写中文让他自己翻,要提前翻好。生成完,再用语音识别回听一遍,确认没念错。"
+ },
+ {
+  "id": "u7",
+  "lang": "zh",
+  "acc": 0.97,
+  "speech": [
+   0.0,
+   8.5
+  ],
+  "keep": 8.85,
+  "src_dur": 9.04,
+  "vert": false,
+  "heard": "升级二,禁场景,同一个数字人可以去直播间带货,拍产品广告,做旅游导览,当讲师。"
+ },
+ {
+  "id": "u8",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   8.6
+  ],
+  "keep": 8.95,
+  "src_dur": 9.04,
+  "vert": false,
+  "heard": "方法是两步。第一步,把人物照片和场景描述一起发给图片模型,合成一张开场画面。"
+ },
+ {
+  "id": "u9",
+  "lang": "zh",
+  "acc": 0.968,
+  "speech": [
+   0.0,
+   7.72
+  ],
+  "keep": 8.04,
+  "src_dur": 8.04,
+  "vert": false,
+  "heard": "比如,让他站在直播间里,手里拿着一瓶精华,人物不变,只换背景、服装和道具。"
+ },
+ {
+  "id": "u10",
+  "lang": "zh",
+  "acc": 0.951,
+  "speech": [
+   0.07,
+   7.5
+  ],
+  "keep": 7.85,
+  "src_dur": 8.04,
+  "vert": false,
+  "heard": "第二步,把这张画面交给Grock,写好台词,他就开口了。我们来看看效果。"
+ },
+ {
+  "id": "u11",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   7.4
+  ],
+  "keep": 7.75,
+  "src_dur": 8.04,
+  "vert": false,
+  "heard": "带货、广告、导览、讲课,一张照片全搞定。商用之前,记得标注AI生成。"
+ },
+ {
+  "id": "t4",
+  "lang": "zh",
+  "acc": 0.979,
+  "speech": [
+   0.0,
+   6.7
+  ],
+  "keep": 7.04,
+  "src_dur": 7.04,
+  "vert": true,
+  "heard": "五升级三,换角色,谁说数字人一定是人,小猫小狗也能开口。"
+ },
+ {
+  "id": "t5",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   9.0
+  ],
+  "keep": 9.04,
+  "src_dur": 9.04,
+  "vert": true,
+  "heard": "做法一样,先生成角色形象,再写台词。提示词里写清楚,是这只猫在说话,嘴巴要跟着动。"
+ },
+ {
+  "id": "u12",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   6.4
+  ],
+  "keep": 6.75,
+  "src_dur": 7.04,
+  "vert": false,
+  "heard": "最后,把这些串成一条片子,还是那套流程,脚本,skill,剪辑。"
+ },
+ {
+  "id": "S_shop",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   7.44
+  ],
+  "keep": 7.79,
+  "src_dur": 8.04,
+  "vert": true,
+  "heard": "家人们看过来,这瓶精华一滴就能推开,今天直播间下单再送小样。"
+ },
+ {
+  "id": "S_ad",
+  "lang": "en",
+  "acc": 0.846,
+  "speech": [
+   0.0,
+   4.22
+  ],
+  "keep": 4.57,
+  "src_dur": 6.04,
+  "vert": false,
+  "heard": "40 hours of battery, 0 cables, just press play."
+ },
+ {
+  "id": "S_class",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.56,
+   6.16
+  ],
+  "keep": 6.51,
+  "src_dur": 7.04,
+  "vert": false,
+  "heard": "今天这节课,我们用三分钟搞懂什么是大语言模型。"
+ },
+ {
+  "id": "S_cat",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   6.16
+  ],
+  "keep": 6.51,
+  "src_dur": 7.04,
+  "vert": true,
+  "heard": "喵,这罐猫粮本喵亲自试吃过, 好吃到舔盘。"
+ },
+ {
+  "id": "S_dog",
+  "lang": "en",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   6.88
+  ],
+  "keep": 7.04,
+  "src_dur": 7.04,
+  "vert": false,
+  "heard": "good evening breaking news the park is now open for belly rubs"
+ },
+ {
+  "id": "S_duo",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   8.1
+  ],
+  "keep": 8.45,
+  "src_dur": 9.04,
+  "vert": false,
+  "heard": "照片、语言、场景、角色,你想到的数字人都能演。去组建你自己的数字人团队吧。下期见!"
+ },
+ {
+  "id": "t2",
+  "lang": "zh",
+  "acc": 1.0,
+  "speech": [
+   0.0,
+   4.0
+  ],
+  "keep": 4.35,
+  "src_dur": 5.04,
+  "vert": true,
+  "heard": "先用一分半钟,把基础三步过一遍。"
+ },
+ {
+  "id": "S_travel",
+  "lang": "ja",
+  "acc": 0.471,
+  "speech": [
+   0.0,
+   7.48
+  ],
+  "keep": 2.95,
+  "src_dur": 7.04,
+  "vert": true,
+  "heard": "ここは京都の義援です 夜の台立てとても綺麗でしょう"
+ }
+]

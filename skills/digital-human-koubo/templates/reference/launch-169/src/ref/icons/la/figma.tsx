@@ -1,0 +1,122 @@
+// @ts-nocheck
+
+import type { Variants } from "../motion-shim";
+import { motion, useAnimation } from "../motion-shim";
+import type { HTMLAttributes } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+
+import { cn } from "../cn";
+
+export interface FigmaIconHandle {
+  startAnimation: () => void;
+  stopAnimation: () => void;
+}
+
+interface FigmaIconProps extends HTMLAttributes<HTMLDivElement> {
+  size?: number;
+}
+
+const VARIANTS: Variants = {
+  normal: {
+    pathLength: 1,
+    opacity: 1,
+  },
+  animate: {
+    pathLength: [0, 1],
+    opacity: [0, 1],
+    transition: {
+      delay: 0.3,
+      duration: 0.5,
+      opacity: { delay: 0.25 },
+    },
+  },
+};
+
+const FigmaIcon = forwardRef<FigmaIconHandle, FigmaIconProps>(
+  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+    const controls = useAnimation();
+    const isControlledRef = useRef(false);
+
+    useImperativeHandle(ref, () => {
+      isControlledRef.current = true;
+
+      return {
+        startAnimation: () => controls.start("animate"),
+        stopAnimation: () => controls.start("normal"),
+      };
+    });
+
+    const handleMouseEnter = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onMouseEnter?.(e);
+        } else {
+          controls.start("animate");
+        }
+      },
+      [controls, onMouseEnter]
+    );
+
+    const handleMouseLeave = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isControlledRef.current) {
+          onMouseLeave?.(e);
+        } else {
+          controls.start("normal");
+        }
+      },
+      [controls, onMouseLeave]
+    );
+
+    return (
+      <div
+        className={cn(className)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        {...props}
+      >
+        <svg
+          fill="none"
+          height={size}
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width={size}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <motion.path
+            animate={controls}
+            d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z"
+            variants={VARIANTS}
+          />
+          <motion.path
+            animate={controls}
+            d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z"
+            variants={VARIANTS}
+          />
+          <motion.path
+            animate={controls}
+            d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z"
+            variants={VARIANTS}
+          />
+          <motion.path
+            animate={controls}
+            d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z"
+            variants={VARIANTS}
+          />
+          <motion.path
+            animate={controls}
+            d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z"
+            variants={VARIANTS}
+          />
+        </svg>
+      </div>
+    );
+  }
+);
+
+FigmaIcon.displayName = "FigmaIcon";
+
+export { FigmaIcon };
