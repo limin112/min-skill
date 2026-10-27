@@ -9,7 +9,9 @@ MiniMax H3 + Turbo LoRA（8 步，双卡）─▶ 每段「画面 + 原生配音
 whisper.cpp 逐段回听 ─▶ 逐字对齐 ─▶ 通用 Remotion 模板 + 代码合成配乐 ─▶ 成片
 ```
 
-![例子预览](examples/ep01-moss-lora/preview.jpg)
+[![例子预览：点开看成片](examples/ep01-moss-lora/preview.jpg)](examples/ep01-moss-lora/ep01.mp4)
+
+▶ **成片**：[examples/ep01-moss-lora/ep01.mp4](examples/ep01-moss-lora/ep01.mp4)（3 分 38 秒 · 720p · 23 MB）· **推文**：[https://x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · **仓库**：[github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
 
 ## 一期工程长这样
 

@@ -1,6 +1,8 @@
 # 例子 · 一篇技术文章 → 3 分 38 秒的数字人讲解片
 
-![预览](preview.jpg)
+[![预览：点开看成片](preview.jpg)](ep01.mp4)
+
+▶ 成片：[ep01.mp4](ep01.mp4)（720p · 23 MB，原片 1080p 用下面的命令自己渲染）· 推文：[https://x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · skill：[github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
 
 原文：《你的专属「女友马尔福」：MOSS-Image 图像 LoRA 从 0 到 1 实战》（LoRA 训练工具包见 [limin112/Lora](https://github.com/limin112/Lora)）。
 成片：16:9 · 25 段 H3 口播 + 片头标题卡 · 4 个角色 · 英式英语开场切普通话 · 中英双语字幕 · 6 个章节。
@@ -14,6 +16,7 @@
 | `episode.json` | 系列名、片名、`theme: "magic"`、片头卡、`music.mood: "magic"`、字幕高亮词 |
 | `article/` | 文章原图（visual 用 `article/xxx.jpg` 引用） |
 | `frames/` | 三张全屏场景首帧（伦敦雨夜、城堡图书馆、机房），script.json 里 `frame` 引用 |
+| `ep01.mp4` | 成片（720p 压缩版） |
 | `prompts/` | 角色和场景首帧的文生图提示词（Moss 挂 moss01 LoRA，其余用底模） |
 
 本片用到的 visual：`big`（开场、语言切换、原因分析）· `image` + `chips` / `stamp` / `marks` / `shout`（文章配图）· `images` + `crop`（同一张大图拆成两行对比）· `stats`（训练参数滚动数字）· `bars`（时间花在哪）· `tags`（caption 字段拆解）· `card`（caption 打字、开源清单）· `terminal`（命令和日志）· `flow`（首帧 + 台词 → 画面声音）· `quote` · `shout` · `end`，以及数组（左图右数据卡、上终端下截图）。
