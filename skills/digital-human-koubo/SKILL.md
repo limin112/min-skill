@@ -1,97 +1,118 @@
 ---
 name: digital-human-koubo
-description: 用本地开源模型做数字人口播视频，全程不依赖任何云服务：docker3 上的 MOSS-Image（可加自己训的人物 LoRA，如 moss01）出主播首帧和场景图 → worker2 上的 MiniMax H3（ComfyUI + Turbo 加速 LoRA，双 4090）按段生成「画面 + 原生配音」→ whisper 逐段回听 → 逐字对齐 → Remotion 剪辑出片。支持多角色同台（真人感主讲、黑框眼镜搭档、Pixar 风动物、二次元 Q 版）、中英混说（英式英语开场切普通话）、双语字幕。先按内容推荐剪辑风格让用户选（小林式解说 / 网红花字口播 / 发布解读 / 保姆级教程 / 多主播多语言），自动套从 MrBeast、MKBHD、影视飓风、Johnny Harris、Vox、半佛、差评等头部博主拆出来的 48 个包装组件。触发：用 Moss / 我的数字人讲这段、数字人口播、数字人讲解文章、本地 H3 生成口播、做个教程讲解视频、加花字 / 加包装 / 加弹幕 / 文字放在人身后、有哪些包装手法。不用于：冒充真人、用别人的脸或声音。
+description: 把任意一篇文章（技术教程、产品发布、新闻解读、读书笔记、论文、公众号长文……）做成数字人讲解视频，全程本地开源模型、不接云端生成服务：读文章 → 写多角色口播稿（每段带一个声明式画面 visual：大字、配图、圈重点、数据卡、终端、流程、标签、柱状图、金句、片尾阵容）→ 本地文生图出角色首帧（默认 MOSS-Image，可挂自己训的人物 LoRA）→ 本地 MiniMax H3（ComfyUI + Turbo 加速，双卡）按段生成「画面 + 原生配音」→ whisper 逐段回听 → 逐字对齐 → 通用 Remotion 模板出片（配色 / 配乐有魔幻、科技、温暖、史诗四种情绪预设，配乐代码合成无版权）。支持多角色同台（真人感主讲、搭档吐槽、Pixar 风动物、二次元 Q 版）、多语言混说（如英式英语开场切普通话）、双语字幕；另有花字口播 / 发布解读 / 多主播等风格和 48 个包装组件。触发：讲解这篇文章、把文章做成视频、数字人口播、数字人讲解、AI 主播讲一下、用我的数字人讲、本地 H3 生成口播、做个教程讲解视频、加花字 / 加包装。不用于：冒充真人、用别人的脸或声音。
 ---
 
-# 数字人口播（本地版：MOSS-Image + MiniMax H3）
+# 数字人讲解：任意文章 → 本地生成的口播视频
 
-角色、显卡、模型路径都在 `persona.json`；剪辑风格在 `references/style-menu.md`；H3 的提示词规范和加速在 `references/h3.md`。
+**换一篇文章只改数据，不改代码。** 一期工程就是一个目录：
 
 ```
-文章 / 想法 ──写稿──▶ script.json ──h3.py build──▶ tasks.json
-                                                     │ h3.py run（worker2 双卡，Turbo 8 步）
-MOSS-Image（docker3）──首帧──────────────────────────┘
-                                                     ▼
-                     gen/<段>.mp4 ──assemble.py（whisper 回听）──▶ cut/ ──对齐──▶ Remotion ──▶ 成片
+<工程>/
+  article/        文章原文和配图（visual 里引用的图片都从这里拿）
+  script.json     口播稿：每段 {id, host, t, lang, shot, ch, act, visual, …}
+  cast.json       本期阵容：{"<角色id>": {"use": "<库里的 id>"}} 或自己新建
+  episode.json    片名、系列、配色 theme、片头卡、配乐 music、字幕高亮词
+  frames/         可选：某些段单独用的场景首帧
 ```
+
+```
+文章 ──读、拆──▶ script.json + cast.json + episode.json
+角色首帧（gen_image.py，本地文生图）──┐
+                                     ▼
+h3.py build/run（本地 H3，双卡）──▶ gen/ ──assemble.py（whisper 回听）──▶ cut/
+                                                                           ▼
+            build_tl.py ──▶ edit/src/tl.json + episode.json ──▶ templates/explainer-169 ──▶ 成片
+            make_score.py --mood … ──▶ 配乐
+```
+
+机器、模型路径在 `persona.json`；现成角色在 `assets/cast/library.json`；画面字段在 `references/visuals.md`；H3 提示词规范和加速在 `references/h3.md`。
 
 ## 红线
-- **只用原创或授权的形象和声音**：自己训的虚构人物（moss01）、底模生成的原创角色、用户本人或明确同意的人。不用明星、真实创作者的脸或声音，不做「像某某」的角色；名字和造型避开现成 IP（黑框眼镜男是原创角色 Oliver，不是哈利·波特）。
-- 仓库原带的 `assets/avatar_ref.jpg`（白背心）是原作者的数字人，NOTICE.md 不许用在别人的内容里：**只当效果参考，不当主播**。
-- 主播是成年人造型（「late twenties」「adult」写进提示词）；性感可以，露骨不行。
-- 成片角上标「AI 生成」，片尾写「本片角色全部由 AI 生成」。
-- 点名评价第三方产品的说法，要有出处或标「个人体验」。
-- worker2 / docker3 是**共享机器**：起实例前看 `nvidia-smi` 和内存（别人的 3DGS 重建常年占 40G 内存，不要动它）；跑完 `h3.py down` 把自己起的 ComfyUI 停掉。
+- **只用原创或授权的形象和声音**：底模生成的原创角色、用户自己训的虚构人物 LoRA、用户本人或明确同意的人。不用明星、真实创作者的脸或声音，不做「像某某」的角色；名字和造型避开现成 IP。
+- 仓库原带的 `assets/avatar_ref.jpg`（白背心）是上游作者的数字人，NOTICE.md 不许用在别人的内容里：**只当效果参考，不当主播**。
+- 角色是成年人造型（提示词写「adult」「late twenties」之类）；性感可以，露骨不行。
+- 成片角上标「AI 生成」，片尾写「本片角色全部由 AI 生成」（模板默认带）。
+- 文章里的数字、结论照原文讲，不编；点名评价第三方产品的说法要有出处或标「个人体验」。配图只用文章自带的、用户给的或本地生成的。
+- 跑模型的机器多半是**共享机器**：起实例前看 `nvidia-smi` 和内存，别动别人的进程；跑完 `h3.py down` 把自己起的服务停掉，远端临时文件脚本会删。
 
 ## 流程
 
 ### 准备（每次新对话第一次用时做，有就跳过）
-1. **H3**：`python3 scripts/h3.py status tasks.json`（随便一个 tasks.json；没有就 `ssh worker2-ts nvidia-smi`）。连不上先试 `worker2`（局域网）再试 `worker2-ts`（Tailscale）。没装 Turbo 加速：`ssh worker2-ts 'COMFY=/data/amin/h3/ComfyUI bash -s' < scripts/h3_setup_accel.sh`（走 ModelScope）。
-2. **MOSS**：`ssh docker3 nvidia-smi`，只用 GPU0 / GPU1。
-3. **本机**：`bash scripts/doctor.sh`（ffmpeg、Python、Node 18+、whisper-cli；whisper 模型默认找 `~/.cache/whisper.cpp/ggml-large-v3-turbo.bin`）。
+1. **H3**：`ssh <persona.h3.ssh_hosts[0]> nvidia-smi` 能通、ComfyUI 和权重在 `persona.h3.root`。没装 Turbo 加速：`ssh <host> 'COMFY=<root>/ComfyUI bash -s' < scripts/h3_setup_accel.sh`（走 ModelScope）。换机器 / 第一次部署见 `references/install.md`。
+2. **文生图**：`ssh <persona.image.ssh_host> nvidia-smi`，只用 `persona.image.gpus` 里的卡。
+3. **本机**：`bash scripts/doctor.sh`（ffmpeg、Python 3 + numpy、Node 18+、whisper-cli + 模型）。
 
-### 0. 看内容 → 推荐风格 → 让用户选
-按 `references/style-menu.md`：一行诊断 → 推荐 2 个风格 → 一次问完（风格 · 比例时长 · 花字强度 · 角色阵容 · 语言）→ 写进 `brief.json`。
+### 0. 读文章 → 定方案 → 让用户确认
+读完文章（URL 先抓成 markdown 放 `article/`，图片一起下），给用户一段话的方案，一次问完：
+- **风格**：默认 16:9 讲解（`templates/explainer-169`，本流程）；短视频要花字口播 / 发布解读 / 多主播等，按 `references/style-menu.md` 推荐。
+- **结构**：3–6 个章节（`ch`），每章 2–5 段；总长按文章密度，一般 2–6 分钟（25 段 ≈ 3.5 分钟）。
+- **阵容**：一个主讲 + 0–3 个配角（搭档吐槽、动物助教、Q 版分身）；先看 `assets/cast/library.json` 有没有合适的，没有就新做（第 1 步）。
+- **语言**：普通话 / 英语 / 英式开场切中文……英文段配中文双语字幕。
+- **情绪**：`magic` 魔幻 · `tech` 科技 · `warm` 温暖 · `epic` 史诗（同时决定配色和配乐，episode.json 里一个词）。
 
-| 风格 | 比例 | 时长 | 剪辑实现 |
-|---|---|---|---|
-| A 小林式解说 | 16:9 | 3–20 分钟 | finance-explainer 引擎（拍表 episode.json） |
-| B 网红花字口播 | 9:16 | 30–120 秒 | `templates/huazi-916`（edit.json 驱动） |
-| C 发布解读 | 16:9 | 30–90 秒 | `templates/reference/launch-169` |
-| D 保姆级教程 | 16:9 | 3–8 分钟 | `templates/reference/tutorial-169`；**完整实例：examples/ep01-moss-lora（MOSS LoRA 教程）** |
-| E 多主播多语言 | 16:9 | 3–7 分钟 | `templates/reference/multihost-169` |
-
-### 1. 角色首帧（MOSS-Image，docker3）
+### 1. 阵容 → cast.json（需要新角色时出首帧）
 ```bash
-python3 scripts/moss_image.py --lora moss01 --ratio 9:16 --n 4 --out cast/moss --prompt "moss01, a confident adult woman in her late twenties, ..."
-python3 scripts/moss_image.py --ratio 16:9 --n 2 --out cast/owl --prompt "a cute fluffy snowy owl professor ..."     # 不加 LoRA = 原创角色
-python3 scripts/moss_image.py --prompts prompts.json --gpu 1 --out cast/x                                         # 一批不同尺寸/种子
+python3 scripts/gen_image.py --ratio 9:16 --n 4 --out cast/host --prompt "a confident adult woman in her late twenties, ..."   # 底模原创
+python3 scripts/gen_image.py --lora <名字> --ratio 9:16 --n 4 --out cast/me --prompt "<触发词>, ..."                         # 自己训的人物 LoRA
+python3 scripts/gen_image.py --prompts prompts.json --gpu 1 --out cast/x                                                    # 一批不同尺寸 / 种子
 ```
-- **LoRA 人物别覆盖它学到的特征**：moss01 是银金发，提示词写「dark hair」就不像她了。只写想换的东西（衣服、场景、构图、纹身这类小特征）。
-- 每个角色出 2–4 张挑一张：正脸、闭嘴、手不挡脸、头顶留点空。PIP 竖屏用 9:16，全屏场景用 16:9。
-- 挑好放 `assets/cast/<角色>_<916|169>.jpg`，在 `persona.json → hosts` 里登记（style / who / voice / keep）。场景图（伦敦街头、城堡图书馆…）放工程的 `frames/`，在 script.json 那段写 `frame`。
-- 两个任务并行跑时 `--gpu 0` / `--gpu 1` 各占一张卡；`--out` 可以同目录（回传文件按任务命名，不会互相覆盖）。
+- 每个角色出 2–4 张让用户挑：正脸、闭嘴、手不挡脸、头顶留空。小窗用 9:16，全屏场景段用 16:9。
+- **LoRA 人物别在提示词里覆盖它学到的特征**（发色、脸型），只写想换的衣服、场景、小特征。
+- 字段（name · tag · color · frames · style · who · keep · voice · pronoun · mouth · sound）见 library.json 的 `_fields`；做法见 `references/new-avatar.md`。好用的角色加进 library.json 下次直接 `use`。
 
 ### 2. 写稿 → script.json
-每段一两句、5–14 秒（普通话约 5 字/秒，英文约 2.6 词/秒），字段见 `scripts/h3.py` 文件头：`id · host · t · lang · shot · frame · act · sound · sub · zh`。
-- `lang`：`zh` / `en-GB`（英式）/ `en` / `ja`。英文段加 `zh` 翻译 → 双语字幕。
-- `t` 是**念的原文**（数字、缩写写成好念的样子：「moss 零一」「四十八 G」）；字幕要显示别的写法就加 `sub`（「moss01」），句数要和 `t` 一致。
-- `act` 写这一段的表演（英文、一两句），让表情和手势跟着台词走（「counts two on her fingers」「pushes his glasses up」）。H3 很听话，这是最出效果的一栏。
-- 多角色接力：主讲 + 搭档吐槽 + 动物助教 + 二次元分身，每 3–5 段换一次人，节奏就活了。
+每段一两句、5–14 秒（普通话约 5 字/秒，英文约 2.6 词/秒）。字段：
+- `t` **念的原文**（数字写成好念的样子：「四十八 G」「第三百步」）；字幕要显示别的写法就加 `sub`（「48G」），句数和 `t` 一致。`lang`：`zh` / `en-GB` / `en` / `ja`；英文段加 `zh` → 双语字幕。
+- `host` 是 cast.json 里的 id；`shot`：`pip`（右侧小窗 + 左侧内容区，默认）/ `scene`（全屏场景，配 `frame` 场景首帧）。
+- `ch` 章节名（顶部进度条按出现顺序生成）；`act` 表演（英文一两句，跟着台词走：「counts two on her fingers」「pushes his glasses up」）——H3 很听话，这是最出效果的一栏。
+- **`visual` 这一段左侧内容区放什么**：类型和字段见 `references/visuals.md`。原则：
+  - 文章有图就用图（`image`，`marks` 圈出正在讲的那块，`crop` 只取一部分，`stamp` 盖章）；有数字就上 `stats` / `bars`；有命令就 `terminal`；有步骤就 `flow`；有字段 / 关键词就 `tags`；金句用 `quote`；开场和章节转折用 `big`。
+  - 元素出现的时刻用 `at` 卡到口播里的词：`"at": "六十五"` = 念到「六十五」时弹出，`["词", 0.6]` = 那个词后 0.6 秒。
+  - 一段里要两样东西（左图右数据）就写数组，各自给 `box`。
+- 多角色接力：每 3–5 段换一次人，配角负责吐槽、提问、反应，节奏就活了。
 
-### 3. 生成（H3，worker2）
+### 3. 生成（H3）
 ```bash
 python3 scripts/h3.py build script.json tasks.json          # 打印段数、时长、GPU 时间粗估 —— 先报给用户
-python3 scripts/h3.py run tasks.json --gpus 2               # 双卡各一个实例，任务轮流分；后台跑 + Monitor 看 ✓/✗
+python3 scripts/h3.py run tasks.json --gpus 2               # 双卡各一个实例，按队列长度分；后台跑 + Monitor 看 ✓/✗
 python3 scripts/h3.py run tasks.json --only s07             # 删掉 gen/s07.mp4 再跑 = 自动换种子重拍
 python3 scripts/h3.py down                                  # 收工：只停自己起的、队列空了的实例
 ```
-- 不花钱，但占共享卡：开跑前报「段数 · 秒数 · 预计多久」。实测 Turbo 8 步、480×864、7–9 秒一段约 3.5–4 分钟（含排队），双卡 25 段约 40 分钟。
+- 开跑前报「段数 · 秒数 · 预计多久」：Turbo 8 步、480×864、7–9 秒一段约 2–4.5 分钟，双卡 25 段约 45 分钟。
 - **先拍 1–2 段验收再批量**（换了角色、语言或首帧都要）。
-- 提示词由 build 按 H3 官方 I2VA 结构自动拼（见 references/h3.md），一般只改 script.json，不手改 tasks.json。
-- 只有首帧改了内容才会换缓存文件名（按内容哈希）；改完首帧重新 build。
+- 提示词由 build 按 H3 官方 I2VA 结构自动拼（`references/h3.md`），只改 script.json，不手改 tasks.json。
 
 ### 4. 回听 + 抽帧
-`python3 scripts/assemble.py script.json`：按每段的 `lang` 用 whisper 转写、比文稿、剪掉段尾空白、出 `cut/<段>.mp4` + `cut/<段>.json`（逐字时间）+ `cut/qa.json`。
-- 准确率 < 85% 的段打 ⚠：先听，真念错就删 gen 重拍。
+`python3 scripts/assemble.py script.json`：按每段 `lang` 用 whisper 转写、比文稿、剪段尾，出 `cut/<段>.mp4` + `cut/<段>.json`（逐字时间）+ `cut/qa.json`。
+- 准确率 < 85% 的段打 ⚠：先听，真念错就删 gen 重拍；数字写法不同（「五十六」/「56」）不算错。
 - **每段抽 4 帧看一眼**：脸有没有漂、手指有没有崩、有没有自己烧字幕。
-- 竖屏小窗和横屏场景混着时不拼预览片（尺寸不同），cut/ 直接进剪辑。
-- H3 会把台词摊满给定时长：段尾没有静音是正常的，whisper 听全了就行；明显赶就给那段加 `seconds`。
 
-### 5. 剪辑（Remotion）
-- 时间轴：`python3 scripts/align.py script.json` 出逐字时间；多角色 / 双语 / 场景混排的教程片，直接参考 examples/ep01-moss-lora/tools/build_tl.py（片段做 -16 LUFS 响度归一、字幕按句切、片头卡插在指定段后）。
-- 起工程：`bash scripts/new_edit.sh reference/tutorial-169 edit`，按本期稿子重写每段的画面（参考 examples/ep01-moss-lora/edit/src/Episode.tsx：左侧内容区 + 右侧主播小窗 + 顶部章节进度 + 底部字幕，全屏场景段自动切满屏）。
-- **Panel 里用的是整片绝对时间**（`W(段, 词)`），别把它套进 `<Sequence>`（里面的帧号会变成相对的，动画全错位）——按时间条件渲染。
-- 包装：按 `references/packaging-presets.json` 的默认包装排，用户点名的手法在上面加减（references/packaging.md）。
-- 声音：**画面里的 `<OffthreadVideo>` 一律 `muted`**，人声单独铺一条 `<Audio>`（同一段音频放两遍 = +6 dB、峰值削波）；成片再 `loudnorm=I=-16:TP=-1.5` 过一遍。H3 原声直接用（每个角色音色由 persona.hosts.voice 固定）；段间差异大时用 `scripts/voicefx/unify.py` 统一。BGM 压在人声下约 20 dB，片头卡抬起来。
-- 渲染前 `npx remotion still` 抽 4–6 帧看版式；渲染后抽转场中间帧。
+### 5. 剪辑出片（templates/explainer-169）
+```bash
+bash scripts/new_edit.sh explainer-169 edit                   # 起工程（可 DH_NODE_MODULES_FROM=<已有 Remotion 4.0.408 工程> 省掉 npm install）
+python3 scripts/build_tl.py --edit edit                       # cut/ + script.json + cast.json + episode.json → edit/src/tl.json、episode.json、public/
+python3 scripts/make_score.py --sec 300 --out edit/public/music/score.mp3   # 配乐：情绪读 episode.json → music.mood，或 --mood tech
+cd edit && npx remotion still src/index.ts Explainer s.jpg --frame=<帧>     # 先抽帧看版式
+npx remotion render src/index.ts Explainer out/video.mp4 --crf=18
+ffmpeg -i out/video.mp4 -c:v copy -af loudnorm=I=-16:TP=-1.5:LRA=11 -c:a aac -b:a 192k out/final.mp4
+```
+- build_tl 做的事：每段 -16 LUFS 响度归一、按标点切字幕、英文段挂中文、片头卡插到 `titleCard.after` 那段后、把 visual 引用的图片拷进 public 并量好尺寸（`"cast:<id>"` = 那个角色的首帧）。改了 script.json 的 visual 重跑它就行，不用重新生成。
+- **抽帧看每段的中间和结尾**：结尾帧里该出现的元素都要出来了；文字不压脸、不出框、不和字幕打架。有问题改 visual 的 `box` / `at` / 字号，重跑 build_tl。
+- 声音：模板里 `<OffthreadVideo>` 一律 `muted`，人声单独一条 `<Audio>`（放两遍 = +6 dB 削波）；配乐 `music.bed` 默认 0.14（压在人声下约 20 dB），片头卡抬到 `music.title`。音效按 visual 类型自动加（盖章 slam、金句 ding、数字 pop、换人 swish、全屏场景 whoosh），来自 `make_assets.py` 合成。
+- 模板不够用（要新的画面类型）：在 `Explainer.tsx` 的 `Visual` 里加一个 `case`，同时写进 `references/visuals.md`，不要为某一期写死。
+- 其他风格：花字口播 `templates/huazi-916`（`references/huazi.md`）；包装组件按 `references/packaging-presets.json` 排、用户点名的手法在上面加减（`references/packaging.md`）。
+
+## 例子
+`examples/ep01-moss-lora`：一篇「人物 LoRA 训练」技术文章 → 3 分 38 秒、25 段、4 个角色、英式开场切普通话的讲解片。只有数据文件（script.json 里 25 个 visual、cast.json、episode.json、article/ 配图），渲染走通用模板。写新一期时照着它的 visual 写法来。
 
 ## 参考
+- references/visuals.md：visual 的全部类型、字段、时间写法、布局坐标
 - references/h3.md：H3 提示词结构（I2VA）、Turbo 加速、双实例、实测速度和坑
-- references/style-menu.md：五种风格、内容诊断、怎么问用户、brief.json
+- references/style-menu.md：五种风格、内容诊断、怎么问用户
 - references/packaging.md / packaging-playbook.md / packaging-presets.json：48 个包装组件和用法
 - references/huazi.md：花字模板 edit.json 字段
-- references/voice.md：声音（H3 原生音色、参考音频、自己的 TTS）
-- references/new-avatar.md：做一个新角色（MOSS + 可选 LoRA）
-- references/install.md：本机环境
-- persona.json：角色阵容（hosts）、H3 / MOSS 的机器与模型配置
+- references/voice.md：声音（H3 原生音色、怎么写 voice、统一音色）
+- references/new-avatar.md：做一个新角色
+- references/install.md：本机和 GPU 机器的环境
+- persona.json：H3 / 文生图的机器与模型配置、默认表演；assets/cast/library.json：现成角色

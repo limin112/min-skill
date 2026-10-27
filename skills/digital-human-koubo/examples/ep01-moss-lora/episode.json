@@ -1,0 +1,40 @@
+{
+ "series": "MOSS 魔法学院",
+ "tag": "第一课 · 人物 LoRA × 数字人口播",
+ "title": "你的专属「女友马尔福」",
+ "subtitle": "MOSS-Image 人物 LoRA × 本地数字人口播 · 从 0 到 1",
+ "credits": "MOSS-Image · KohakuMoss · MiniMax H3 · Remotion · Claude Code",
+ "disclosure": "AI 生成",
+ "theme": "magic",
+ "titleCard": {
+  "after": "s03",
+  "dur": 3.6,
+  "image": "article/cover_5x2_notext.jpg"
+ },
+ "music": {
+  "src": "music/score.mp3",
+  "mood": "magic",
+  "bed": 0.14,
+  "title": 0.6
+ },
+ "highlight": [
+  "LoRA",
+  "caption",
+  "moss01",
+  "GPT Image 2",
+  "4090",
+  "MiniMax H3",
+  "H3",
+  "whisper",
+  "Remotion",
+  "ComfyUI",
+  "GitHub",
+  "skill",
+  "Loss",
+  "正则图",
+  "触发词",
+  "第三百步",
+  "第九百步",
+  "Moss"
+ ]
+}

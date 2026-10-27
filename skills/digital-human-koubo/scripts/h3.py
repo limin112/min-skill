@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""口播稿 → worker2 上的 MiniMax H3（ComfyUI）分段出片：画面 + 原生配音一起出。替代原来的 Renoise Grok。
+"""口播稿 → worker2 上的 MiniMax H3（ComfyUI）分段出片：画面 + 原生配音一起出。
 
 用法（在工程目录里跑）：
   python3 h3.py build script.json tasks.json [--fast] [--no-accel]
@@ -8,11 +8,11 @@
   python3 h3.py down                       # 只停自己起的 ComfyUI，而且队列空了才停
 
 script.json：[{"id","host","t","lang", ...}]
-  host   persona.json → hosts 里的键（moss / oliver / hoot / chibi …）
+  host   项目 cast.json 里的角色 id（cast.json 可以 {"use": "oliver"} 借 skill 角色库 assets/cast/library.json 里的）
   t      台词，原样念（不翻译不改写）
   lang   zh（普通话，默认）/ en-GB（英式英语）/ en / ja …
   shot   pip（画中画小窗，默认 480 档）/ full（全屏 576 档）/ scene（全屏场景，16:9）
-  frame  可选：这段单独用的首帧（相对工程目录）；不写就用 host 在该比例下的 frames
+  frame  可选：这段单独用的首帧（相对工程目录）；不写就用这个角色在该比例下的 frames
   ratio  可选：9:16 / 16:9；不写按 shot（scene → 16:9）再按 host 默认
   act    可选：这段的表演（英文），不写用 persona.acts[shot]
   camera / sound / music  可选：镜头、环境声、配乐（music 默认 N/A，配乐后期统一铺）
@@ -108,6 +108,22 @@ def fit_image(src, dst, w, h):
                     f"scale={w}:{h}:force_original_aspect_ratio=increase:flags=lanczos,crop={w}:{h}", str(dst)], check=True)
 
 
+def load_cast():
+    """skill 角色库 + 项目 cast.json（项目优先）。frames 解析成绝对路径：库里的相对 skill 目录，项目的相对工程目录"""
+    lib = json.loads((HERE / "assets/cast/library.json").read_text())
+    proj = json.loads(Path("cast.json").read_text()) if Path("cast.json").exists() else {}
+    if not proj:
+        sys.exit("工程目录里没有 cast.json：先定阵容（见 SKILL.md 第 1 步；可以 {\"host\": {\"use\": \"<库里的角色 id>\"}} 借 assets/cast/library.json 里的现成角色）")
+    cast = {}
+    for cid, c in proj.items():
+        if cid.startswith("_"): continue
+        base = dict(lib[c["use"]]) if c.get("use") else {}
+        fr = {r: str(HERE / f) for r, f in base.get("frames", {}).items()}
+        fr.update({r: str(Path(f).resolve()) for r, f in c.get("frames", {}).items()})
+        cast[cid] = {**base, **{k: v for k, v in c.items() if k not in ("use", "frames")}, "frames": fr}
+    return cast
+
+
 def compose(s, hp, sec):
     """H3 官方 I2VA 结构：首帧指令 + 三个核心字段。台词一字不改放进 <d>。"""
     tag, accent = LANG.get(s.get("lang", "zh"), LANG["zh"])
@@ -137,18 +153,22 @@ def build():
     job = re.sub(r"[^\w-]", "_", f"{Path.cwd().name}_{src.stem}")[:60]
     inputs = Path("h3_inputs"); inputs.mkdir(exist_ok=True)
     tasks, gpu_min = [], 0.0
+    CAST = load_cast()
     for s in S:
         sec = seconds_for(s)
         if sec > 15.2:
             sys.exit(f"{s['id']} 约 {sec:.1f} 秒，超过 H3 的 15 秒（362 帧）上限：拆成两段再跑")
-        hid = s.get("host") or P["default_host"]
-        hp = P["hosts"][hid]
+        hid = s.get("host") or next(iter(CAST))
+        if hid not in CAST: sys.exit(f"{s['id']} 的 host「{hid}」不在 cast.json 里（有：{', '.join(CAST)}）")
+        hp = CAST[hid]
         shot = s.get("shot", "pip")
         ratio = s.get("ratio") or ("16:9" if shot == "scene" else hp.get("ratio", "9:16"))
         tier = "fast" if (fast or shot == "pip") else "full"
         w, h = H3["resolution"][ratio][tier]
         L = frames(sec)
-        fsrc = Path(s["frame"]) if s.get("frame") else HERE / hp["frames"][ratio]
+        if not s.get("frame") and ratio not in hp["frames"]:
+            sys.exit(f"{s['id']}：角色 {hid} 没有 {ratio} 的首帧（cast.json → frames），先出一张或给这段写 frame")
+        fsrc = Path(s["frame"]) if s.get("frame") else Path(hp["frames"][ratio])
         img = inputs / f"{fsrc.stem}_{hashlib.sha1(fsrc.read_bytes()).hexdigest()[:8]}_{w}x{h}.png"   # 换了首帧内容就换文件名
         if not img.exists(): fit_image(fsrc, img, w, h)
         t = {"id": s["id"], "host": hid, "width": w, "height": h, "length": L, "seconds": round((L - 1) / 24, 2),

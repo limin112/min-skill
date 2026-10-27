@@ -3,204 +3,878 @@
   "id": "s01",
   "host": "moss",
   "shot": "scene",
-  "frame": "frames/moss_london.jpg",
+  "ch": "开场",
   "lang": "en-GB",
+  "frame": "frames/moss_london.jpg",
   "t": "Good evening. I'm Moss. Small confession: I don't actually exist. I was trained on fifty-six pictures and one rather tired graphics card.",
-  "sound": "Light rain patters on wet cobblestones, a distant red bus rumbles past and footsteps splash softly.",
+  "zh": "晚上好，我是 Moss。坦白一件小事：我其实并不存在。我是用五十六张图片和一张累坏了的显卡训练出来的。",
   "act": "She stands in the drizzle, tilts her head with a knowing half-smile and raises one eyebrow on the confession.",
-  "zh": "晚上好，我是 Moss。坦白一件小事：我其实并不存在。我是用五十六张图片和一张累坏了的显卡训练出来的。"
+  "sound": "Light rain patters on wet cobblestones, a distant red bus rumbles past and footsteps splash softly.",
+  "visual": {
+   "type": "stats",
+   "pos": "bottom",
+   "items": [
+    {
+     "value": "56",
+     "label": "pictures",
+     "at": "fifty-six"
+    },
+    {
+     "value": "1 × RTX 4090",
+     "label": "one rather tired graphics card",
+     "at": "graphics card",
+     "color": "info"
+    }
+   ]
+  }
  },
  {
   "id": "s02",
   "host": "oliver",
   "shot": "pip",
+  "ch": "开场",
   "lang": "en-GB",
   "t": "Brilliant. Shall we do the rest in Mandarin? Half our viewers are in China.",
+  "zh": "太棒了。剩下的用中文讲吧？我们一半的观众在中国。",
   "act": "He pushes his glasses up his nose, then gives a quick conspiratorial grin.",
-  "zh": "太棒了。剩下的用中文讲吧？我们一半的观众在中国。"
+  "visual": {
+   "type": "big",
+   "kicker": "LANGUAGE SWITCH",
+   "title": "English **→** 中文",
+   "sub": "开场用英式英语，正片切成普通话",
+   "chips": [
+    {
+     "text": "Mandarin, please.",
+     "color": "info",
+     "at": "Mandarin"
+    },
+    {
+     "text": "一半观众在中国",
+     "color": "accent",
+     "at": "China"
+    }
+   ]
+  }
  },
  {
   "id": "s03",
   "host": "moss",
   "shot": "pip",
+  "ch": "开场",
   "lang": "zh",
   "t": "没问题，接下来说中文。这一期教你两件事：怎么训练出一个我，再怎么让我开口讲课。",
-  "act": "She laughs lightly, switches into a confident presenter mode and counts two on her fingers."
+  "act": "She laughs lightly, switches into a confident presenter mode and counts two on her fingers.",
+  "visual": {
+   "type": "big",
+   "kicker": "这一期，教你两件事",
+   "title": "训练一个我\n**再让我开口讲课**",
+   "cards": [
+    {
+     "title": "① 人物 LoRA",
+     "sub": "MOSS-Image · 56 张图 · 一张 4090",
+     "at": "训练"
+    },
+    {
+     "title": "② 数字人口播",
+     "sub": "MiniMax H3 · 本地 · 画面声音一起出",
+     "at": "开口"
+    }
+   ]
+  }
  },
  {
   "id": "s04",
   "host": "moss",
   "shot": "pip",
+  "ch": "① 为什么要 LoRA",
   "lang": "zh",
-  "t": "通用模型什么都会画，但它不认识你心里的那个人。LoRA，就是给模型补上这一小块记忆。"
+  "t": "通用模型什么都会画，但它不认识你心里的那个人。LoRA，就是给模型补上这一小块记忆。",
+  "visual": {
+   "type": "image",
+   "src": "article/lora_principle.jpg",
+   "label": "LoRA 原理",
+   "chips": [
+    {
+     "text": "通用模型：什么都会画",
+     "at": "什么都会画"
+    },
+    {
+     "text": "但不认识你心里的那个人",
+     "color": "bad",
+     "at": "不认识"
+    },
+    {
+     "text": "LoRA = 补一小块记忆（约 150MB）",
+     "color": "accent2",
+     "at": "一小块记忆"
+    }
+   ]
+  }
  },
  {
   "id": "s05",
   "host": "moss",
   "shot": "pip",
+  "ch": "② 准备数据",
   "lang": "zh",
   "t": "我的五十六张训练照，全是 GPT Image 2 画的。训练只跑了一个小时，挑照片却花了三个多小时。",
-  "act": "She widens her eyes in mock exhaustion on the last phrase."
+  "act": "She widens her eyes in mock exhaustion on the last phrase.",
+  "visual": [
+   {
+    "type": "image",
+    "src": "article/moss01_batch1_sample.jpg",
+    "label": "GPT Image 2 画的训练照",
+    "box": {
+     "x": 90,
+     "y": 180,
+     "w": 1000,
+     "h": 600
+    }
+   },
+   {
+    "type": "bars",
+    "title": "时间花在哪",
+    "box": {
+     "x": 1110,
+     "y": 180,
+     "w": 310
+    },
+    "at": [
+     "一个小时",
+     -0.2
+    ],
+    "items": [
+     {
+      "label": "训练",
+      "text": "1 小时",
+      "value": 1,
+      "color": "info",
+      "at": "一个小时"
+     },
+     {
+      "label": "准备数据",
+      "text": "3 小时 15 分",
+      "value": 3.25,
+      "color": "accent",
+      "at": "三个多小时"
+     }
+    ],
+    "note": {
+     "text": "数据才是大头",
+     "at": [
+      "三个多小时",
+      0.6
+     ]
+    }
+   }
+  ]
  },
  {
   "id": "s05b",
   "host": "moss",
   "shot": "pip",
+  "ch": "② 准备数据",
   "lang": "zh",
-  "t": "做法是：先给 GPT Image 2 一张定妆照，再按清单出不同发型、衣服和角度。六十八张里删掉重复的，留下五十六张。"
+  "t": "做法是：先给 GPT Image 2 一张定妆照，再按清单出不同发型、衣服和角度。六十八张里删掉重复的，留下五十六张。",
+  "visual": [
+   {
+    "type": "image",
+    "src": "article/moss01_train_set.jpg",
+    "label": "最终训练集",
+    "box": {
+     "x": 90,
+     "y": 180,
+     "w": 1000,
+     "h": 600
+    }
+   },
+   {
+    "type": "stats",
+    "column": true,
+    "box": {
+     "x": 1110,
+     "y": 200,
+     "w": 310
+    },
+    "items": [
+     {
+      "count": [
+       0,
+       68
+      ],
+      "suffix": " 张",
+      "label": "按清单出图",
+      "at": "六十八"
+     },
+     {
+      "count": [
+       68,
+       56
+      ],
+      "suffix": " 张",
+      "label": "删掉 12 张重复",
+      "color": "accent",
+      "at": "五十六"
+     }
+    ]
+   }
+  ]
  },
  {
   "id": "s06",
   "host": "hoot",
   "shot": "scene",
+  "ch": "② 准备数据",
   "lang": "zh",
   "t": "咕咕！每张图都要配一句描述，叫 caption。开头写触发词 moss 零一，后面写发型、衣服和场景。",
   "sub": "咕咕！每张图都要配一句描述，叫 caption。开头写触发词 moss01，后面写发型、衣服和场景。",
-  "act": "The owl flaps one wing like a lecturer pointing at a blackboard and bobs its head."
+  "act": "The owl flaps one wing like a lecturer pointing at a blackboard and bobs its head.",
+  "visual": {
+   "type": "card",
+   "title": "caption 长这样",
+   "at": [
+    "caption",
+    -0.2
+   ],
+   "w": 640,
+   "y": 130,
+   "code": {
+    "hi": "moss01",
+    "hiAt": "开头",
+    "text": ", upper-body portrait, braided updo hairstyle, school uniform with a black cloak, rainy gothic courtyard",
+    "at": "后面"
+   }
+  }
  },
  {
   "id": "s07",
   "host": "moss",
   "shot": "pip",
+  "ch": "② 准备数据",
   "lang": "zh",
   "t": "划重点：caption 里写进去的，模型当成可以换的东西；没写的，才会被记成她本人。",
-  "act": "She leans closer to the camera and taps the air once for emphasis."
+  "act": "She leans closer to the camera and taps the air once for emphasis.",
+  "visual": {
+   "type": "image",
+   "src": "article/moss01_caption_example.jpg",
+   "label": "训练图 + caption",
+   "chips": [
+    {
+     "text": "写进去的 → 可以换",
+     "color": "good",
+     "at": "写进去",
+     "size": 30
+    },
+    {
+     "text": "没写的 → 记成她本人",
+     "color": "accent2",
+     "at": "没写的",
+     "size": 30
+    }
+   ]
+  }
  },
  {
   "id": "s07b",
   "host": "moss",
   "shot": "pip",
+  "ch": "② 准备数据",
   "lang": "zh",
-  "t": "这次用标签式 caption：触发词、构图、表情、发型、衣服、场景，逗号隔开，简单好改。"
+  "t": "这次用标签式 caption：触发词、构图、表情、发型、衣服、场景，逗号隔开，简单好改。",
+  "visual": {
+   "type": "tags",
+   "kicker": "标签式 caption",
+   "title": "逗号隔开，简单好改",
+   "items": [
+    {
+     "text": "moss01,",
+     "label": "触发词",
+     "at": "触发词"
+    },
+    {
+     "text": "upper-body portrait,",
+     "label": "构图",
+     "at": "构图"
+    },
+    {
+     "text": "calm expression,",
+     "label": "表情",
+     "at": "表情"
+    },
+    {
+     "text": "low bun hairstyle,",
+     "label": "发型",
+     "at": "发型"
+    },
+    {
+     "text": "school uniform,",
+     "label": "衣服",
+     "at": "衣服"
+    },
+    {
+     "text": "snowy cloister walkway",
+     "label": "场景",
+     "at": "场景"
+    }
+   ]
+  }
  },
  {
   "id": "s08",
   "host": "moss",
   "shot": "scene",
-  "frame": "frames/moss_server.jpg",
+  "ch": "③ 训练",
   "lang": "zh",
+  "frame": "frames/moss_server.jpg",
   "t": "一张 4090，四十八 G 显存，一千二百步，六十五分钟。第三百步，它就认出我了。",
-  "sound": "A steady low hum of GPU fans and the faint electrical buzz of a server room."
+  "sound": "A steady low hum of GPU fans and the faint electrical buzz of a server room.",
+  "visual": {
+   "type": "stats",
+   "pos": "bottom",
+   "items": [
+    {
+     "value": "RTX 4090",
+     "label": "48G 显存 · 一张卡",
+     "at": "4090"
+    },
+    {
+     "count": [
+      0,
+      1200
+     ],
+     "label": "训练步数",
+     "at": "一千二百"
+    },
+    {
+     "count": [
+      0,
+      65
+     ],
+     "suffix": " 分钟",
+     "label": "总训练时长",
+     "at": "六十五"
+    },
+    {
+     "value": "第 300 步 ✓",
+     "label": "已经认出她",
+     "color": "good",
+     "at": "第三百步"
+    }
+   ]
+  }
  },
  {
   "id": "s09",
   "host": "oliver",
   "shot": "pip",
+  "ch": "③ 训练",
   "lang": "en-GB",
   "t": "Step three hundred, and she already looks like... well, her. Slightly terrifying.",
+  "zh": "第三百步，她就已经像……嗯，她本人了。有点吓人。",
   "act": "He leans back in mock alarm, then shrugs with a dry smile.",
-  "zh": "第三百步，她就已经像……嗯，她本人了。有点吓人。"
+  "visual": [
+   {
+    "type": "image",
+    "src": "article/moss01_step300_row_ucloud.jpg",
+    "label": "第 300 步的测试图",
+    "box": {
+     "x": 90,
+     "y": 200,
+     "w": 1260,
+     "h": 320
+    }
+   },
+   {
+    "type": "quote",
+    "text": "Slightly terrifying.",
+    "at": "terrifying",
+    "y": 580
+   }
+  ]
  },
  {
   "id": "s10",
   "host": "moss",
   "shot": "pip",
+  "ch": "④ 验收",
   "lang": "zh",
   "t": "但验收时有个意外：加上 LoRA 以后，就算不写触发词，画出来的人也全变成了我。",
-  "act": "She covers her mouth briefly in surprise, then laughs."
+  "act": "She covers her mouth briefly in surprise, then laughs.",
+  "visual": {
+   "type": "image",
+   "src": "article/moss01_leak_matrix.jpg",
+   "label": "写 / 不写 moss01",
+   "stamp": {
+    "text": "身份泄漏",
+    "at": "全变成了我"
+   }
+  }
  },
  {
   "id": "s11",
   "host": "chibi",
   "shot": "pip",
+  "ch": "④ 验收",
   "lang": "zh",
-  "seconds": 5,
   "t": "全世界都变成我啦！",
-  "act": "She jumps with joy and throws both arms up, sparkles bursting around her."
+  "seconds": 5,
+  "act": "She jumps with joy and throws both arms up, sparkles bursting around her.",
+  "visual": {
+   "type": "image",
+   "src": "article/moss01_leak_compare_greenhouse.jpg",
+   "shout": {
+    "text": "全世界都变成我啦！",
+    "at": 0.2
+   }
+  }
  },
  {
   "id": "s12",
   "host": "moss",
   "shot": "pip",
+  "ch": "④ 验收",
   "lang": "zh",
-  "t": "原因很简单：训练集里只有我一个人。想让模型学会区分，就加一批不带触发词的正则图。"
+  "t": "原因很简单：训练集里只有我一个人。想让模型学会区分，就加一批不带触发词的正则图。",
+  "visual": {
+   "type": "big",
+   "kicker": "为什么会泄漏",
+   "title": "模型没见过「不是 Moss 的人」",
+   "size": 76,
+   "cards": [
+    {
+     "title": "现在",
+     "sub": "56 张全是她\n学到的是「画人 = 画成她」",
+     "color": "bad",
+     "at": "只有我一个人",
+     "w": 540
+    },
+    {
+     "title": "改进",
+     "sub": "加一批不写 moss01 的正则图\n学会「moss01 = 这个人」",
+     "color": "good",
+     "at": "正则图",
+     "w": 560
+    }
+   ]
+  }
  },
  {
   "id": "s13",
   "host": "moss",
   "shot": "pip",
+  "ch": "④ 验收",
   "lang": "zh",
   "t": "还有，Loss 别盯太紧。它一直在零点四到零点六五之间乱跳，效果要看固定测试图。",
-  "act": "She waves one hand dismissively, then points down as if at a chart."
+  "act": "She waves one hand dismissively, then points down as if at a chart.",
+  "visual": {
+   "type": "image",
+   "src": "article/moss01_loss.jpg",
+   "label": "真实 Loss 曲线",
+   "marks": [
+    {
+     "rect": [
+      131,
+      119,
+      1321,
+      357
+     ],
+     "text": "0.4 ~ 0.65 来回跳，看不出哪步最好",
+     "at": "零点四"
+    }
+   ],
+   "chips": [
+    {
+     "text": "看固定提示词 + 固定种子的测试图",
+     "color": "good",
+     "at": "固定测试图",
+     "size": 30
+    }
+   ]
+  }
  },
  {
   "id": "s13b",
   "host": "moss",
   "shot": "pip",
+  "ch": "④ 验收",
   "lang": "zh",
-  "t": "我最后留了两个版本：第三百步，泄漏最轻；第九百步，更像我。按需要选就行。"
+  "t": "我最后留了两个版本：第三百步，泄漏最轻；第九百步，更像我。按需要选就行。",
+  "visual": {
+   "type": "images",
+   "layout": "rows",
+   "items": [
+    {
+     "src": "article/moss01_ucloud_grid.jpg",
+     "crop": [
+      130,
+      50,
+      1800,
+      360
+     ],
+     "title": "第 300 步",
+     "sub": "泄漏最轻",
+     "color": "good",
+     "at": "第三百步"
+    },
+    {
+     "src": "article/moss01_ucloud_grid.jpg",
+     "crop": [
+      130,
+      770,
+      1800,
+      360
+     ],
+     "title": "第 900 步",
+     "sub": "更像她，泄漏也更强",
+     "color": "accent",
+     "at": "第九百步"
+    }
+   ]
+  }
  },
  {
   "id": "s13c",
   "host": "moss",
   "shot": "pip",
+  "ch": "④ 验收",
   "lang": "zh",
-  "t": "练好的 LoRA 一条命令导出给 ComfyUI。同一个种子，原模型、不写触发词、写触发词，三张并排一比就清楚。"
+  "t": "练好的 LoRA 一条命令导出给 ComfyUI。同一个种子，原模型、不写触发词、写触发词，三张并排一比就清楚。",
+  "visual": [
+   {
+    "type": "terminal",
+    "title": "导出给 ComfyUI",
+    "y": 180,
+    "at": [
+     "一条命令",
+     -0.4
+    ],
+    "lines": [
+     {
+      "text": "bash export_comfy.sh 900",
+      "at": [
+       "一条命令",
+       -0.2
+      ]
+     },
+     {
+      "text": "✓ moss01-lora-comfy.safetensors",
+      "out": true,
+      "color": "good",
+      "at": "ComfyUI"
+     }
+    ]
+   },
+   {
+    "type": "image",
+    "src": "article/comfyui_leak_compare_ui.jpg",
+    "crop": [
+     0,
+     329,
+     1800,
+     750
+    ],
+    "label": "原模型 · 不写 · 写 moss01",
+    "at": "同一个种子",
+    "box": {
+     "x": 90,
+     "y": 410,
+     "w": 1260,
+     "h": 380
+    }
+   }
+  ]
  },
  {
   "id": "s14",
   "host": "moss",
   "shot": "pip",
+  "ch": "⑤ 让她开口",
   "lang": "zh",
-  "t": "照片有了，怎么让我开口？用本地的 MiniMax H3：一张首帧加一句台词，画面和声音一起出来。"
+  "t": "照片有了，怎么让我开口？用本地的 MiniMax H3：一张首帧加一句台词，画面和声音一起出来。",
+  "visual": {
+   "type": "flow",
+   "title": "本地 **MiniMax H3**：一张图 + 一句话",
+   "steps": [
+    {
+     "img": "cast:moss",
+     "title": "首帧",
+     "sub": "定妆照当第一帧",
+     "at": "首帧"
+    },
+    {
+     "code": "<d>[Chinese]\n没问题，接下来说中文。\n</d>",
+     "title": "台词",
+     "sub": "写进提示词",
+     "at": "台词"
+    },
+    {
+     "title": "画面 + 声音",
+     "sub": "一次生成\n口型、表情、音色\n全在一个模型里",
+     "color": "accent",
+     "at": "画面和声音"
+    }
+   ]
+  }
  },
  {
   "id": "s15",
   "host": "oliver",
   "shot": "pip",
+  "ch": "⑤ 让她开口",
   "lang": "en-GB",
   "t": "No cloud credits. Just two graphics cards humming away in a cupboard.",
+  "zh": "不用云端积分。只有两张显卡在柜子里嗡嗡转。",
   "act": "He nods proudly, gesturing sideways with his thumb.",
-  "zh": "不用云端积分。只有两张显卡在柜子里嗡嗡转。"
+  "visual": {
+   "type": "terminal",
+   "title": "nvidia-smi",
+   "y": 200,
+   "lines": [
+    {
+     "text": "nvidia-smi --query-gpu=index,name,memory.total",
+     "at": 0.2
+    },
+    {
+     "text": "0, NVIDIA GeForce RTX 4090, 49140 MiB   ███████ H3 :8188",
+     "out": true,
+     "color": "info",
+     "at": [
+      "two graphics cards",
+      -0.2
+     ]
+    },
+    {
+     "text": "1, NVIDIA GeForce RTX 4090, 49140 MiB   ███████ H3 :8190",
+     "out": true,
+     "color": "info",
+     "at": [
+      "two graphics cards",
+      0.3
+     ]
+    },
+    {
+     "text": "# 0 cloud credits · 2 local GPUs",
+     "out": true,
+     "color": "accent2",
+     "at": "cupboard"
+    }
+   ]
+  }
  },
  {
   "id": "s16",
   "host": "moss",
   "shot": "pip",
+  "ch": "⑤ 让她开口",
   "lang": "zh",
-  "t": "每段十秒左右。加速 LoRA 把二十步降到八步，生成完用 whisper 逐字回听，念错就自动重拍。"
+  "t": "每段十秒左右。加速 LoRA 把二十步降到八步，生成完用 whisper 逐字回听，念错就自动重拍。",
+  "visual": {
+   "type": "terminal",
+   "title": "h3.py run tasks.json --gpus 2",
+   "lines": [
+    {
+     "text": "python3 h3.py run tasks.json --gpus 2",
+     "at": 0.1
+    },
+    {
+     "text": "Turbo LoRA · 20 步 → 8 步",
+     "out": true,
+     "color": "accent2",
+     "at": "加速"
+    },
+    {
+     "text": "  已入队 s03 → :8190 (480x864 · 8.7s)",
+     "out": true,
+     "color": "mute",
+     "at": "八步"
+    },
+    {
+     "text": "  ✓ s03 → gen/s03.mp4",
+     "out": true,
+     "color": "good",
+     "at": "生成完"
+    },
+    {
+     "text": "python3 assemble.py script.json",
+     "at": "whisper"
+    },
+    {
+     "text": "  s03  准确率 97%  说话 0.3–7.9s",
+     "out": true,
+     "color": "good",
+     "at": "逐字回听"
+    },
+    {
+     "text": "⚠ s07  准确率 71% → 换种子重拍",
+     "out": true,
+     "color": "bad",
+     "at": "念错"
+    }
+   ]
+  }
  },
  {
   "id": "s17",
   "host": "moss",
   "shot": "pip",
+  "ch": "⑤ 让她开口",
   "lang": "zh",
   "t": "最后交给 Remotion 剪辑：字幕、配图、画中画全是代码，一条命令出片。",
-  "act": "She snaps her fingers on the last phrase with a satisfied smile."
+  "act": "She snaps her fingers on the last phrase with a satisfied smile.",
+  "visual": [
+   {
+    "type": "terminal",
+    "title": "Explainer.tsx",
+    "y": 180,
+    "lines": [
+     {
+      "text": "<HostBox /> <Visual it={seg} /> <Subs />",
+      "out": true,
+      "color": "info",
+      "at": 0.1
+     },
+     {
+      "text": "npx remotion render Explainer out.mp4",
+      "at": [
+       "一条命令",
+       -0.2
+      ]
+     }
+    ]
+   },
+   {
+    "type": "tags",
+    "mono": false,
+    "box": {
+     "x": 90,
+     "y": 440,
+     "w": 1260,
+     "h": 300
+    },
+    "items": [
+     {
+      "text": "数字人",
+      "at": 0.3
+     },
+     {
+      "text": "字幕",
+      "at": "字幕"
+     },
+     {
+      "text": "配图",
+      "at": "配图"
+     },
+     {
+      "text": "画中画",
+      "at": "画中画"
+     },
+     {
+      "text": "音效 / 配乐",
+      "at": "代码"
+     }
+    ]
+   }
+  ]
  },
  {
   "id": "s17b",
   "host": "oliver",
   "shot": "pip",
+  "ch": "⑤ 让她开口",
   "lang": "en-GB",
   "t": "And the whole pipeline lives in one skill. Our editor is, technically, a robot.",
+  "zh": "整条流水线就装在一个 skill 里。我们的剪辑师，严格来说，是个机器人。",
   "act": "He leans in and whispers the last words behind his hand.",
-  "zh": "整条流水线就装在一个 skill 里。我们的剪辑师，严格来说，是个机器人。"
+  "visual": {
+   "type": "terminal",
+   "title": "Claude Code",
+   "y": 220,
+   "lines": [
+    {
+     "text": "/digital-human-koubo 讲解这篇文章",
+     "at": 0.2
+    },
+    {
+     "text": "● 写稿 → 切段 → H3 生成 → 回听 → 对齐 → 剪辑",
+     "out": true,
+     "color": "info",
+     "at": "one skill"
+    },
+    {
+     "text": "● 剪辑师：Claude（technically, a robot）",
+     "out": true,
+     "color": "accent2",
+     "at": "robot"
+    }
+   ]
+  }
  },
  {
   "id": "s18",
   "host": "moss",
   "shot": "scene",
-  "frame": "frames/moss_library.jpg",
+  "ch": "⑥ 全部开源",
   "lang": "zh",
+  "frame": "frames/moss_library.jpg",
   "t": "文章、训练笔记本、ComfyUI 工作流，还有做这条视频的整套 skill，全部开源在 GitHub。",
-  "sound": "Candles crackle softly and glowing photographs flutter like paper in the air."
+  "sound": "Candles crackle softly and glowing photographs flutter like paper in the air.",
+  "visual": {
+   "type": "card",
+   "title": "github.com/limin112/min-skill",
+   "at": [
+    "文章",
+    -0.2
+   ],
+   "w": 620,
+   "y": 150,
+   "lines": [
+    {
+     "text": "训练文章 + Notebook",
+     "at": "文章"
+    },
+    {
+     "text": "ComfyUI 工作流",
+     "at": "ComfyUI"
+    },
+    {
+     "text": "H3 Turbo 加速配置",
+     "at": "工作流"
+    },
+    {
+     "text": "这条视频的整套 skill",
+     "at": "skill"
+    }
+   ]
+  }
  },
  {
   "id": "s19",
   "host": "hoot",
   "shot": "scene",
+  "ch": "⑥ 全部开源",
   "lang": "zh",
   "t": "咕！链接放在评论区，记得亲手跑一遍。",
-  "act": "The owl winks and gives a little hop on the books."
+  "act": "The owl winks and gives a little hop on the books.",
+  "visual": {
+   "type": "shout",
+   "text": "链接在评论区 ↓",
+   "color": "accent",
+   "at": "链接",
+   "sparkle": false
+  }
  },
  {
   "id": "s20",
   "host": "moss",
   "shot": "pip",
+  "ch": "⑥ 全部开源",
   "lang": "en-GB",
   "t": "Train your own. Just don't make her prettier than me. Cheerio!",
+  "zh": "去训练你自己的吧。只是别把她画得比我还好看。再见啦！",
   "act": "She gives a playful wink and a small wave goodbye.",
-  "zh": "去训练你自己的吧。只是别把她画得比我还好看。再见啦！"
+  "visual": {
+   "type": "end",
+   "title": "Cheerio!"
+  }
  }
 ]

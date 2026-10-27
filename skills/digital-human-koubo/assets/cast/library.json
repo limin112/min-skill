@@ -1,0 +1,64 @@
+{
+ "_how": "可复用的现成角色。项目的 cast.json 里写 {\"<角色id>\": {\"use\": \"oliver\"}} 直接借用（还能覆盖 name/tag/voice 等字段），或者照这个格式新建。frames 路径相对 skill 目录。",
+ "_fields": "name 名牌 · tag 名牌小字 · color 主题色（accent/good/info/extra 或 #hex）· ratio 默认画幅 · frames {9:16, 16:9} 首帧 · style 画风 · who 身份描述（英文，进 H3 提示词）· keep 要保住的小特征 · voice 音色（每段一字不改）· pronoun she/he/it · mouth lips/beak · sound 默认环境声",
+ "moss": {
+  "name": "Moss",
+  "ratio": "9:16",
+  "frames": {
+   "9:16": "assets/cast/moss_916.jpg",
+   "16:9": "assets/cast/moss_169.jpg"
+  },
+  "style": "Live-action, photorealistic",
+  "who": "the confident adult woman Moss in her late twenties with long loose wavy blonde hair, a fitted black scoop-neck top and a small fine-line crescent-moon tattoo on her upper chest",
+  "keep": "chest tattoo",
+  "voice": "young adult woman with a warm, bright, slightly husky voice and lively pace",
+  "sound": "Quiet room tone with soft fabric rustle and natural breathing between phrases.",
+  "color": "accent",
+  "tag": "主讲",
+  "note": "需要 moss01 LoRA 才能出新首帧（scripts/gen_image.py --lora moss01）；只用现成首帧不需要"
+ },
+ "oliver": {
+  "name": "Oliver",
+  "ratio": "9:16",
+  "pronoun": "he",
+  "frames": {
+   "9:16": "assets/cast/oliver_916.jpg"
+  },
+  "style": "Live-action, photorealistic",
+  "who": "the witty young British man Oliver with round black-rimmed glasses, tousled dark brown hair and a charcoal knit sweater over a white shirt",
+  "keep": "glasses",
+  "voice": "young British man with a dry, amused baritone voice and quick comic timing",
+  "color": "info",
+  "tag": "搭档"
+ },
+ "hoot": {
+  "name": "Hoot 教授",
+  "ratio": "16:9",
+  "pronoun": "it",
+  "frames": {
+   "16:9": "assets/cast/hoot_169.jpg"
+  },
+  "style": "3D animated, Pixar-style render",
+  "who": "the cute fluffy snowy owl Professor Hoot wearing tiny round gold glasses and a striped scarf, perched on a stack of old books",
+  "keep": "glasses and scarf",
+  "mouth": "beak",
+  "voice": "small elderly owl professor with a soft, scratchy, cheerful voice",
+  "sound": "Crackling candles, a soft page turn and a gentle feather ruffle.",
+  "color": "good",
+  "tag": "助教"
+ },
+ "chibi": {
+  "name": "Q 版 Moss",
+  "ratio": "9:16",
+  "frames": {
+   "9:16": "assets/cast/chibi_916.jpg"
+  },
+  "style": "2D anime, clean cel-shaded animation",
+  "who": "the cheerful chibi anime witch girl with long wavy blonde hair, a dark green ribbon and a crescent-moon hairclip, holding a tiny glowing graphics card",
+  "keep": "hairclip",
+  "voice": "tiny, high-pitched, bubbly anime girl voice",
+  "sound": "A sparkling magical chime and soft twinkles.",
+  "color": "extra",
+  "tag": "二次元分身"
+ }
+}

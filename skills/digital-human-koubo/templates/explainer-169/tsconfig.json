@@ -11,5 +11,5 @@
     "noEmit": true,
     "types": ["react"]
   },
-  "include": ["src", "storyboard.json"]
+  "include": ["src"]
 }

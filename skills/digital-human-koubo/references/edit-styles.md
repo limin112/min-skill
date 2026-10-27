@@ -4,9 +4,10 @@
 
 | 风格 | 工程 | 入口 | 适合 |
 |---|---|---|---|
+| **通用文章讲解（数据驱动，默认）** | templates/explainer-169 | src/Explainer.tsx + tl.json（build_tl.py 生成）+ episode.json | 任意文章：教程、解读、发布、读书、论文；字段见 references/visuals.md |
 | B 花字口播（数据驱动） | skill 内 templates/huazi-916 | src/Huazi.tsx + src/edit.json | 抖音 / 小红书口播、带货、种草 |
 | C 发布解读 | templates/reference/launch-169 | src/Film.tsx | 新品发布、横屏 B 站 |
-| D 教程 | templates/reference/tutorial-169 | src/Tutorial.tsx | 保姆级教程、操作演示 |
+| D 教程 | templates/reference/tutorial-169 | src/Tutorial.tsx（参考实现，按段重写；新片优先 explainer-169） | 保姆级教程、操作演示 |
 | E 多主播多语言 | templates/reference/multihost-169 | src/Tutorial.tsx（nar / clip / title / outro） | 能力展示、多场景、出海 |
 | A 小林式解说 | finance-explainer skill 的 templates/engine | src/Episode.tsx + episode.json | 财经 / 科技事件解说 |
 

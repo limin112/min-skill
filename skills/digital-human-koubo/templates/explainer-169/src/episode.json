@@ -1,0 +1,13 @@
+{
+ "series": "系列名",
+ "tag": "第一期 · 一句话主题",
+ "title": "片头大标题",
+ "subtitle": "副标题：这期讲什么",
+ "credits": "用到的工具 · 致谢",
+ "disclosure": "AI 生成",
+ "theme": "tech",
+ "titleCard": { "after": "s03", "dur": 3.6 },
+ "cast": {},
+ "music": { "src": "music/score.mp3", "mood": "tech", "bed": 0.14, "title": 0.6 },
+ "highlight": ["关键词一", "关键词二"]
+}

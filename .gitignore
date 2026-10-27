@@ -2,3 +2,8 @@
 __pycache__/
 *.pyc
 node_modules/
+
+# digital-human-koubo：上游作者的数字人形象图，按上游 NOTICE 不随仓库分发
+skills/digital-human-koubo/assets/avatar_ref.jpg
+skills/digital-human-koubo/assets/packaging/
+skills/digital-human-koubo/assets/styles/

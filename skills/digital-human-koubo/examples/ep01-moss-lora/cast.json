@@ -1,0 +1,19 @@
+{
+ "_how": "本片阵容：use = 借 skill 角色库 assets/cast/library.json 里的角色；这里写的字段覆盖库里的",
+ "moss": {
+  "use": "moss",
+  "tag": "主讲 · moss01 LoRA"
+ },
+ "oliver": {
+  "use": "oliver",
+  "tag": "搭档 · 黑框眼镜"
+ },
+ "hoot": {
+  "use": "hoot",
+  "tag": "猫头鹰助教"
+ },
+ "chibi": {
+  "use": "chibi",
+  "tag": "二次元分身"
+ }
+}

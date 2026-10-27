@@ -1,7 +1,7 @@
 # 声音
 
 ## 默认：H3 原生配音
-H3 出画面的同时出声音，口型天然对齐。每个角色的音色描述写在 `persona.json → hosts.<id>.voice`，**每段一字不改**，整片音色才统一；口音写在 script.json 的 `lang`（`en-GB` = 英式 RP、`zh` = 普通话）。
+H3 出画面的同时出声音，口型天然对齐。每个角色的音色描述写在 cast.json（或角色库 `assets/cast/library.json`）的 `voice`，**每段一字不改**，整片音色才统一；口音写在 script.json 的 `lang`（`en-GB` = 英式 RP、`zh` = 普通话）。
 
 段与段之间仍有轻微差异（混响、齿音）时：`python3 scripts/voicefx/unify.py <输出目录> <片段…>` 统一频谱 + 同一个小房间混响，再进剪辑。
 

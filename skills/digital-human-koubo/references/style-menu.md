@@ -71,7 +71,7 @@
 - **适合**：「几步做出 XX」、工具上手、安装配置。3–8 分钟。
 - **画面**：顶部步骤进度条；左侧界面仿真（浏览器 / 终端 / 聊天窗逐字打出、橙色圈出按钮）；主播在右侧小窗，讲概念时全屏；插入真实演示对比片段。
 - **稿子**：每步「做什么 → 怎么点 → 怎么确认成功」，命令写成好念的样子，真实数字（价格、积分）进画面。
-- **怎么做**：参考实现 `templates/reference/tutorial-169/src/Tutorial.tsx`（tl.json 驱动，每段一个 Scene）。
+- **怎么做**：`templates/explainer-169`（数据驱动，每段一个 visual，见 references/visuals.md；完整例子 examples/ep01-moss-lora）。要界面仿真等定制场景再参考 `templates/reference/tutorial-169/src/Tutorial.tsx`。
 - **默认包装**：搜索框打字开场 → 成品快闪 → 步骤徽章常驻；每个「点哪里」用 ZoomFocus + 手绘圈，坑用 FreezeFrame「等等！」，每大步后复盘板。
 - **成本**：pip 段 480p，最省。
 
@@ -79,7 +79,7 @@
 ![](../assets/styles/E_multi_host.jpg)
 - **适合**：展示数字人能力本身、品牌出海、一个产品多场景（直播带货 / 广告 / 导览 / 讲师）、动物角色、用户本人出镜。
 - **画面**：冷开场多语言快闪（一句整句 + 五语各 1 秒问候）；两位主播横竖混排接力；全屏场景片段带语言标签和中文翻译；结尾快闪 + 同框。
-- **怎么做**：参考实现 `templates/reference/multihost-169/src/Tutorial.tsx`（nar / clip / title / outro 四类条目）。场景图用 MOSS-Image 出（人物 LoRA + 场景描述，16:9），再当 H3 的首帧开口。
+- **怎么做**：参考实现 `templates/reference/multihost-169/src/Tutorial.tsx`（nar / clip / title / outro 四类条目）。场景图用 `gen_image.py` 出（可挂人物 LoRA + 场景描述，16:9），再当 H3 的首帧开口。
 - **坑**：生成完抽帧检查有没有烧字幕、手指有没有崩；外语台词提前翻好，生成后按语言回听；冷门汉字和英文缩写写成好念的样子。
 - **默认包装**：多语言快闪 / 预告闪回 → 逐词堆叠 → 标题卡；换主播打字名牌，去过哪儿用地图航线，换场景用对比擦除或纸张拼贴。
 - **成本**：最高——场景图 + 全屏 720p 多。
