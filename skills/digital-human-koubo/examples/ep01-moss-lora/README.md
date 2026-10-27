@@ -1,8 +1,8 @@
 # 例子 · 一篇技术文章 → 3 分 38 秒的数字人讲解片
 
-[![预览：点开看成片](preview.jpg)](ep01.mp4)
+https://github.com/user-attachments/assets/b1b299ae-412f-4722-a6cc-b3edc19e1f8f
 
-▶ 成片：[ep01.mp4](ep01.mp4)（720p · 23 MB，原片 1080p 用下面的命令自己渲染）· 推文：[https://x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · skill：[github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
+▶ 成片：上面直接播放（540p）· 清晰版 [ep01.mp4](ep01.mp4)（720p · 23 MB，原片 1080p 用下面的命令自己渲染）· 推文：[https://x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · skill：[github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
 
 原文：《你的专属「女友马尔福」：MOSS-Image 图像 LoRA 从 0 到 1 实战》（LoRA 训练工具包见 [limin112/Lora](https://github.com/limin112/Lora)）。
 成片：16:9 · 25 段 H3 口播 + 片头标题卡 · 4 个角色 · 英式英语开场切普通话 · 中英双语字幕 · 6 个章节。

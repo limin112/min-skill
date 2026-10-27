@@ -11,9 +11,9 @@ MiniMax H3 + Turbo LoRA（8 ステップ、GPU 2 枚）─▶ セグメントご
 whisper.cpp で全セグメントを聞き直し ─▶ 文字単位のタイミング ─▶ 汎用 Remotion テンプレート + コード合成 BGM ─▶ 完成動画
 ```
 
-[![サンプルのプレビュー：クリックで再生](examples/ep01-moss-lora/preview.jpg)](examples/ep01-moss-lora/ep01.mp4)
+https://github.com/user-attachments/assets/b1b299ae-412f-4722-a6cc-b3edc19e1f8f
 
-▶ **動画**：[examples/ep01-moss-lora/ep01.mp4](examples/ep01-moss-lora/ep01.mp4)（3 分 38 秒 · 720p · 23 MB）· **ポスト**：[x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · **リポジトリ**：[github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
+▶ **動画**：上でそのまま再生（540p）· 高画質版 [ep01.mp4](examples/ep01-moss-lora/ep01.mp4)（3 分 38 秒 · 720p · 23 MB）· **ポスト**：[x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · **リポジトリ**：[github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
 
 ## 1 本分のプロジェクト構成
 

@@ -1,7 +1,3 @@
-
-
-https://github.com/user-attachments/assets/b1b299ae-412f-4722-a6cc-b3edc19e1f8f
-
 # digital-human-koubo · 任意文章 → 本地数字人讲解视频
 
 **中文** · [English](README.en.md) · [日本語](README.ja.md)
@@ -15,9 +11,9 @@ MiniMax H3 + Turbo LoRA（8 步，双卡）─▶ 每段「画面 + 原生配音
 whisper.cpp 逐段回听 ─▶ 逐字对齐 ─▶ 通用 Remotion 模板 + 代码合成配乐 ─▶ 成片
 ```
 
-[![例子预览：点开看成片](examples/ep01-moss-lora/preview.jpg)](examples/ep01-moss-lora/ep01.mp4)
+https://github.com/user-attachments/assets/b1b299ae-412f-4722-a6cc-b3edc19e1f8f
 
-▶ **成片**：[examples/ep01-moss-lora/ep01.mp4](examples/ep01-moss-lora/ep01.mp4)（3 分 38 秒 · 720p · 23 MB）· **推文**：[https://x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · **仓库**：[github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
+▶ **成片**：上面直接播放（540p）· 清晰版 [ep01.mp4](examples/ep01-moss-lora/ep01.mp4)（3 分 38 秒 · 720p · 23 MB）· **推文**：[https://x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · **仓库**：[github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
 
 ## 一期工程长这样
 

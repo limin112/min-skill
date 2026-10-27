@@ -11,9 +11,9 @@ MiniMax H3 + Turbo LoRA (8 steps, two GPUs) ─▶ per-segment "picture + native
 whisper.cpp listens back to every segment ─▶ per-character timing ─▶ generic Remotion template + synthesized score ─▶ final video
 ```
 
-[![Example preview: click to watch](examples/ep01-moss-lora/preview.jpg)](examples/ep01-moss-lora/ep01.mp4)
+https://github.com/user-attachments/assets/b1b299ae-412f-4722-a6cc-b3edc19e1f8f
 
-▶ **Video**: [examples/ep01-moss-lora/ep01.mp4](examples/ep01-moss-lora/ep01.mp4) (3:38 · 720p · 23 MB) · **Post**: [x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · **Repo**: [github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
+▶ **Video**: plays above (540p) · sharper version [ep01.mp4](examples/ep01-moss-lora/ep01.mp4) (3:38 · 720p · 23 MB) · **Post**: [x.com/MinLiBuilds/status/2114876477267386417](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · **Repo**: [github.com/limin112/min-skill/tree/main/skills/digital-human-koubo](https://github.com/limin112/min-skill/tree/main/skills/digital-human-koubo)
 
 ## What an episode looks like
 
