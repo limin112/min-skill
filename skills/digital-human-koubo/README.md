@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/b1b299ae-412f-4722-a6cc-b3edc19e1f8f
+
 # digital-human-koubo · 任意文章 → 本地数字人讲解视频
 
 **中文** · [English](README.en.md) · [日本語](README.ja.md)
