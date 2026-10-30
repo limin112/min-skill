@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "minli-skill",
   "version": "0.1.0",
-  "description": "敏立的 Claude Code skill 合集：讲解视频流水线（explain-video）、任意文章 → 本地数字人讲解视频（digital-human-koubo：本地文生图 + MiniMax H3 + Remotion 通用模板）、公众号排版模板（wechat-publish-template）、手写字立起来讲故事（handwriting-stand-up）、OpenRouter 免费模型路由（freetoken-bots）。",
+  "description": "敏立的 Claude Code skill 合集：讲解视频流水线（explain-video）、任意文章 → 本地数字人讲解视频（digital-human-koubo：本地文生图 + MiniMax H3 + Remotion 通用模板）、公众号排版模板（wechat-publish-template）、手写字立起来讲故事（handwriting-stand-up）、OpenRouter 免费模型路由（freetoken-bots）、SDR 视频转 HLG HDR 并左右对比（hdr-video）。",
   "author": {
     "name": "limin112"
   },
@@ -23,6 +23,8 @@
     "minimax-h3",
     "moss-image",
     "lora",
-    "remotion"
+    "remotion",
+    "hdr",
+    "hlg"
   ]
 }
