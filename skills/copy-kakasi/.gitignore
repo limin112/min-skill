@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+# 工程产物和素材不进仓库：视频、人脸照片、配置里的地址
+projects/
+*.mp4
+*.mov
+*.wav
+*.onnx
+*.safetensors
+config.json

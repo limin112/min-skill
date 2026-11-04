@@ -1,0 +1,11 @@
+{
+ "title": "示例",
+ "source": "src/my_video.mp4",
+ "source_rights": "own",
+ "size": [1024, 576],
+ "out_size": [1920, 1080],
+ "style": "Live-action, photorealistic, soft diffused natural light, gentle natural film grain, natural matte skin with visible pores, no oily shine, no plastic or waxy skin, no beauty filter, no over-sharpening",
+ "ambience": "Quiet natural ambience, soft wind.",
+ "job": "example_remake",
+ "seed": 20261111
+}
