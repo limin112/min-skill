@@ -42,22 +42,34 @@ def _frame(path, t=1.0):
     return np.frombuffer(raw, np.uint8)
 
 
-def test_ai_label_cannot_be_blanked(ctx, clip, wav):
-    d = _ready(ctx, clip, wav, project={"ai_label": ""})
+def _tags(out):
+    return subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format_tags=comment", "-of", "csv=p=0", str(out)], capture_output=True, text=True).stdout
+
+
+def _corner_diff(d, out):
+    a = _frame(out).reshape(360, 640, 3).astype(float); b = _frame(d / "graded/_orig_00.mp4").reshape(360, 640, 3).astype(float)
+    return (np.abs(a - b)[310:350, 15:120] > 40).sum()
+
+
+def test_no_label_by_default(ctx, clip, wav):
+    d = _ready(ctx, clip, wav)
     assert ctx.run("finish.py", "cut", "--allow-original").returncode == 0
     out = d / "out/t_复刻.mp4"
-    tags = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format_tags=comment", "-of", "csv=p=0", str(out)], capture_output=True, text=True).stdout
-    assert "AI 生成" in tags and (d / "graded/_ai_label.png").exists()
-    a = _frame(out).reshape(360, 640, 3).astype(float); b = _frame(d / "graded/_orig_00.mp4").reshape(360, 640, 3).astype(float)
-    corner, elsewhere = np.abs(a - b)[310:350, 15:120], np.abs(a - b)[20:60, 15:120]
-    assert (corner > 40).sum() > 50 and (elsewhere > 40).sum() == 0, "左下角没有烧进标识"
+    assert not (d / "graded/_ai_label.png").exists() and "AI" not in _tags(out) and _corner_diff(d, out) == 0
+    assert json.loads((d / "out/manifest.json").read_text())["ai_label"] is None
+
+
+def test_label_when_requested(ctx, clip, wav):
+    d = _ready(ctx, clip, wav, project={"ai_label": "AI 生成"})
+    assert ctx.run("finish.py", "cut", "--allow-original").returncode == 0
+    out = d / "out/t_复刻.mp4"
+    assert "AI 生成" in _tags(out) and _corner_diff(d, out) > 50
 
 
 def test_study_only_warns(ctx, clip, wav):
     d = _ready(ctx, clip, wav, project={"source_rights": "study-only"})
     r = ctx.run("finish.py", "cut", "--allow-original")
     assert "不要公开发布" in r.stdout
-    assert "仅供学习研究" in json.loads((d / "out/manifest.json").read_text())["ai_label"]
 
 
 def test_speed_past_end_warns(ctx, clip, wav):

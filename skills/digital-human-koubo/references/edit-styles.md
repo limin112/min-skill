@@ -21,4 +21,4 @@
 - **数字人视频轨一定要 `muted`**：画面用 OffthreadVideo、声音另铺一条时，视频轨不静音会双声叠加，差几毫秒就梳状滤波——听感就是「刺耳、混响忽远忽近」。
 - 分段生成的原声（H3 / 早期的 Grok 都一样）：段间齿音差可达 13 dB、混响尾巴 60–380 ms。用 `scripts/voicefx/unify.py`：1/3 倍频程频谱向中位数匹配（±4 dB）→ 去齿音 + 3–7 kHz 轻收 → 同一个小房间 IR（原本湿的段 wet 少、干的段多）→ 每段 -18 LUFS → 整片铺 -60 dBFS 房间底噪。实测齿音段间差 13.2→5.9 dB。
 - 只改音频时不用重渲画面：`AUDIO_ONLY=1 npx remotion render … out/mix.wav --codec=wav`（remotion.config.ts 里 CRF/codec 要按 AUDIO_ONLY 跳过），再和旧画面 mux。
-- 换声 + 保留原口型（别的 TTS 重念 → 按逐字时间 WSOLA 对齐）实测口型差中位约 100 ms，全屏特写能看出来；要换声又要口型准，用 worker2 的 MuseTalk 按新配音重对口型（musetalk-lipsync skill）。
+- 换声 + 保留原口型（别的 TTS 重念 → 按逐字时间 WSOLA 对齐）实测口型差中位约 100 ms，全屏特写能看出来；要换声又要口型准，用 MuseTalk 按新配音重对口型。

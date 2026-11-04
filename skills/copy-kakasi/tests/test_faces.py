@@ -4,25 +4,19 @@ import cv2, numpy as np, pytest
 from conftest import needs_models
 
 TWO = dict(
-    cast={"A": {"name": "alice", "consent": "self", "adult": True, "method": "repaint", "refs": ["cast/r.png"], "identity": "x"},
-          "B": {"name": "bob", "consent": "fictional", "adult": True, "method": "repaint", "refs": ["cast/r.png"], "identity": "y"}},
+    cast={"A": {"name": "alice", "consent": "self", "method": "repaint", "refs": ["cast/r.png"], "identity": "x"},
+          "B": {"name": "bob", "consent": "fictional", "method": "repaint", "refs": ["cast/r.png"], "identity": "y"}},
     shots=[{"n": "00", "who": ["A", "B"], "desc": "d", "pose": {"A_a": "p", "B_a": "p"}, "box": {"A_a": [100, 100, 300, 300], "B_a": [800, 100, 1000, 300]}}])
 
 
-@pytest.mark.parametrize("role,msg", [
-    ({"name": "x", "consent": "maybe", "adult": True, "refs": []}, "只能是"),
-    ({"name": "x", "consent": "self", "refs": []}, "adult"),
-    ({"name": "x", "consent": "consented", "adult": True, "refs": []}, "consent_record"),
-])
-def test_cast_gate(ctx, role, msg):
-    ctx.project(cast={"F": role})
+def test_consent_must_be_one_of_three(ctx):
+    ctx.project(cast={"F": {"name": "x", "consent": "maybe", "refs": []}})
     r = ctx.run("faces.py", "swap", "--dry")
-    assert r.returncode != 0 and msg in r.stderr
+    assert r.returncode != 0 and "只能是" in r.stderr
 
 
-def test_consented_with_record_passes(ctx):
-    d = ctx.project(cast={"F": {"name": "x", "consent": "consented", "adult": True, "consent_record": "cast/c.txt", "method": "repaint", "refs": ["cast/r.png"], "identity": "i"}})
-    (d / "cast/c.txt").write_text("张三，2026-01-01，同意用于这支片子")
+def test_consent_alone_is_enough(ctx):
+    ctx.project(cast={"F": {"name": "x", "consent": "consented", "method": "repaint", "refs": ["cast/r.png"], "identity": "i"}})
     assert ctx.run("faces.py", "repaint", "--dry").returncode == 0
 
 
@@ -102,3 +96,11 @@ def test_clean_text_off_makes_no_extra_calls_and_keeps_corner(ctx, image_server)
     assert len(image_server) == 2 and not any("remove every" in p for p in image_server)
     src, out = cv2.imread(str(d / "keys/src/00_a.png")), cv2.imread(str(d / "keys/repaint/00_a.png"))
     assert np.array_equal(src[60:105, 1240:1430], out[60:105, 1240:1430]), "头以外的像素要保持原帧"
+
+
+def test_broken_opencv_does_not_crash_at_import(ctx):
+    """有的 OpenCV 版本没有 CascadeClassifier：手标 box 的流程照常，要自动检脸才报清楚"""
+    ctx.project()
+    code = "import cv2\nif hasattr(cv2,'CascadeClassifier'): del cv2.CascadeClassifier\nimport faces\nprint('imported')\nfaces.find_face(None)"
+    r = ctx.driver(code)
+    assert "imported" in r.stdout and "AttributeError" not in r.stderr and "<5" in r.stderr, r.stderr

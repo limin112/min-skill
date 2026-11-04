@@ -7,3 +7,6 @@ node_modules/
 skills/digital-human-koubo/assets/avatar_ref.jpg
 skills/digital-human-koubo/assets/packaging/
 skills/digital-human-koubo/assets/styles/
+
+# digital-human-koubo：自己的机器地址，不进仓库
+skills/digital-human-koubo/persona.local.json

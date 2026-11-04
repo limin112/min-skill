@@ -61,3 +61,10 @@ def test_doctor_finds_models_via_extra_model_paths(ctx, comfy):
     (comfy.root / "extra_model_paths.yaml").write_text(f"h3:\n    base_path: {base}\n    vae: vae\n")
     r = ctx.run("doctor.py", "--h3")
     assert "模型文件齐了" in r.stdout and "缺模型文件" not in r.stdout, r.stdout
+
+
+def test_doctor_reports_missing_dependency_instead_of_crashing(ctx, tmp_path):
+    ctx.project()
+    (tmp_path / "PIL").mkdir(); (tmp_path / "PIL/__init__.py").write_text("raise ImportError('no', name='PIL')")
+    r = ctx.run("doctor.py", env={"PYTHONPATH": str(tmp_path)})
+    assert r.returncode != 0 and "缺 PIL" in r.stderr and "Traceback" not in r.stderr

@@ -4,7 +4,7 @@
   python3 h3_fl.py print [03 22]                                     看每个镜头用哪两张帧、多长、提示词（不连机器）
   python3 h3_fl.py run [--only 03,22] [--gpus N] [--steps 8] [--keep-server] [--allow-busy] [--accept-qa 03_a,05_b|all]
   python3 h3_fl.py run --redo 19,20 --steps 20                       按意见重拍：旧的 gen/、graded/ 挪进 _old/（带时间），再只跑这几个
-  python3 h3_fl.py clean                                             删掉 H3 机器上这个工程上传的帧
+  python3 h3_fl.py clean                                             删掉 H3 机器上这个工程上传的帧，停掉自己起的实例
 
 机器地址来自用户配置（configure.py），默认卡数 = 配置的端口数。
 别人的任务还在队列里时默认不开跑（--allow-busy 才跑）。质检没过的帧默认不送 H3（看过后用 --accept-qa 放行）。
@@ -20,6 +20,7 @@ from common import MAX_FRAMES, OK_JOB, ROOT, project, edl, shots, cast, nn, fram
 P = project()
 W, H = P.get("size", [1024, 576])          # 32 的倍数
 SEED = P.get("seed", 20261111)
+if not P.get("style"): sys.exit("project.json 没写 style（画风描述，见 references/config.md）")
 STYLE = P["style"]
 SOUND = P.get("ambience", "Quiet natural ambience, soft wind.")
 CAM_DEFAULT = "The camera holds a steady shot with only very slight natural movement."
@@ -226,10 +227,12 @@ def run():
                 if line != last: print(line, flush=True); last = line
                 time.sleep(float(opt("--poll", "30")))
         enqueued = False
-    except (RuntimeError, KeyboardInterrupt) as e:
+    except (RuntimeError, KeyboardInterrupt, subprocess.CalledProcessError) as e:     # 传帧或取片失败也走这里
         print(f"中断：{e}", flush=True)
-        if enqueued: print(f"还有任务在队列里，帧先留在 H3 机器上供它们读取；重跑 run 接着等，或之后 h3_fl.py clean 删掉", flush=True)
-        else: _cleanup(h3, rin)
+        if enqueued: print("还有任务没取回，帧和实例先留在 H3 机器上；重跑 run 接着等（不重复生成），或之后 h3_fl.py clean 删帧、停实例", flush=True)
+        else:
+            _cleanup(h3, rin)
+            if "--keep-server" not in sys.argv: h3.down()
         sys.exit(1)
     _cleanup(h3, rin)
     if "--keep-server" not in sys.argv: h3.down()                # 只停自己起的实例
@@ -248,7 +251,7 @@ if __name__ == "__main__":
     if cmd == "run": run()
     elif cmd == "clean":
         import h3_client as h3
-        _cleanup(h3, f"{h3.comfy()}/input/{job()}"); print("已删除 H3 机器上这个工程上传的帧")
+        _cleanup(h3, f"{h3.comfy()}/input/{job()}"); print("已删除 H3 机器上这个工程上传的帧"); h3.down()
     elif cmd == "print":
         for t in tasks(set(sys.argv[2:])): print(f"{t['id']}  {t['first']} → {t['last'] or '（只给首帧）'}  {t['length']} 帧\n{t['prompt']}\n")
     else: sys.exit(__doc__)

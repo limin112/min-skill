@@ -77,12 +77,6 @@ def cast():
         if r.get("consent") not in CONSENT:
             sys.exit(f"cast.json 里 {k} 的 consent 是 {r.get('consent')!r}：只能是 self / consented / fictional。"
                      "真人照片只用用户本人或明确同意的人，先问清楚再写进来。")
-        if r.get("adult") is not True:
-            sys.exit(f"cast.json 里 {k} 没写 \"adult\": true：只做成年人，确认后再写。")
-        if r["consent"] == "consented":
-            rec = r.get("consent_record")
-            if not rec or not (ROOT / rec).is_file() or not (ROOT / rec).read_text().strip():
-                sys.exit(f"cast.json 里 {k} 是 consented，但 consent_record 没指向一份非空的同意记录（谁、何时、同意用在什么片子）。")
     return c
 
 

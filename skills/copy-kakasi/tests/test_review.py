@@ -6,7 +6,7 @@ def _two(ctx):
     return ctx.project(shots=[
         {"n": "00", "who": ["F"], "desc": "d", "pose": {"F_a": "p", "F_b": "p"}, "box": {"F_a": [600, 200, 800, 450], "F_b": [600, 200, 800, 450]}},
         {"n": "01", "who": [], "desc": "d"}],
-        cast={"F": {"name": "the woman", "label": "主角甲", "consent": "self", "adult": True, "method": "repaint", "refs": ["cast/r.png"], "identity": "x"}})
+        cast={"F": {"name": "the woman", "label": "主角甲", "consent": "self", "method": "repaint", "refs": ["cast/r.png"], "identity": "x"}})
 
 
 def test_shows_frame_and_video_qa_failures(ctx):
