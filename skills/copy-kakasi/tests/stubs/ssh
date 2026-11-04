@@ -1,0 +1,8 @@
+#!/bin/bash
+# 假 ssh：把远端命令放到本机跑。测试不碰任何真机器
+for last; do :; done
+host=""; prev=""
+for a in "$@"; do [ "$a" != "$last" ] && [ "${a#-}" = "$a" ] && [ "$prev" != "-o" ] && host=$a; prev=$a; done
+echo "$host :: $last" >> "$AUDIT/ssh.log"
+[ -n "${STUB_SSH_DOWN:-}" ] && exit 255
+exec bash -c "$last"

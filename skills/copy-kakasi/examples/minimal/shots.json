@@ -1,0 +1,9 @@
+[
+ {"n": "00", "who": ["A"], "cx": 0.5,
+  "desc": "A medium shot of a woman standing by a window. Emotion: calm and thoughtful; she slowly looks up, lips closed.",
+  "cam": "The camera holds a steady medium shot.",
+  "swap": {"A": "the woman by the window"}},
+ {"n": "01", "who": ["A"], "cx": 0.5,
+  "desc": "A close-up of the same woman. Emotion: a small, private smile; only small natural movements of eyes and breathing.",
+  "swap": {"A": "the woman"}}
+]

@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+# 假 Codex：严格按提示词指定的路径保存（把第一张图原样拷过去）
+import os, re, shutil, sys
+p = sys.stdin.read(); imgs = [sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "-i"]
+open(os.environ["AUDIT"] + "/codex.log", "a").write(p + "\n===\n")
+f = os.environ.get("CODEX_FAIL_IF")
+if f and f in p: print("ERROR: Selected model is at capacity"); sys.exit(1)
+m = re.search(r"Save the final image file as (\S+)", p)
+if m: shutil.copy(imgs[0], m[1]); print(m[1])

@@ -18,6 +18,7 @@ Skill：放在 `skills/` 下，Claude Code 加载后按需求自动触发。
 | [**handwriting-stand-up**](skills/handwriting-stand-up) | 把**手写字录屏 / 照片**做成单文件 HTML 续集：字从纸上**立起来**成 3D，前面上演一段中世纪小人的故事，最后倒回纸上 | — |
 | [**digital-human-koubo**](skills/digital-human-koubo) | **任意文章 → 本地数字人讲解视频**：读文章写多角色口播稿，每段一个声明式画面（配图圈重点、滚动数字、终端、流程、标签、金句…）→ 本地文生图出角色（可挂自己训的人物 LoRA）→ MiniMax H3（Turbo 8 步、双卡）分段生成「画面 + 原生配音」→ whisper 回听 → 通用 Remotion 模板出片。魔幻 / 科技 / 温暖 / 史诗四种配色 + 代码合成配乐；多角色同台、多语言、双语字幕。例子：一篇 LoRA 训练文章 → 3 分半讲解片 | [任意文章 → 本地数字人讲解](https://x.com/MinLiBuilds/status/2114876477267386417?s=20) · [成片](skills/digital-human-koubo/examples/ep01-moss-lora/ep01.mp4) · [MOSS-Image 人物 LoRA 教程](https://x.com/MinLiBuilds/status/2114617833787470247?s=20) |
 | [**hdr-video**](skills/hdr-video) | 把普通视频（或其中一段）转成 **HLG HDR**（10-bit HEVC），HDR 屏上云、太阳、水面反光这些高光会“发光”；还能出**左 SDR / 右 HDR 的左右对比**。纯 ffmpeg + 自己生成的 3D LUT（不依赖 zscale），参数按实测亮度分布来选，输出标记自检 | — |
+| [**copyKakasi**](skills/copy-kakasi) | **一镜一镜重拍一段视频，只换演员**（本人、明确同意的成年人或 AI 虚构角色）：切镜头 → 换脸 / 打码重画 → 无限画布逐镜头确认 → 自己部署的 MiniMax H3 首尾帧模式生成 → 调色拼片 + AI 标识。H3 地址由你自己指定 | — |
 
 工具：放在 `tools/` 下，是独立的命令行程序，Claude Code 不会加载它们，按各自 README 手动安装。
 
@@ -38,7 +39,7 @@ mkdir -p .claude/skills
 cp -r /tmp/min-skill/skills/explain-video .claude/skills/explain-video
 ```
 
-换成 `freetoken-bots`、`wechat-publish-template`、`handwriting-stand-up`、`digital-human-koubo`、`hdr-video` 同理。重启 Claude Code 生效。
+换成 `freetoken-bots`、`wechat-publish-template`、`handwriting-stand-up`、`digital-human-koubo`、`hdr-video`、`copy-kakasi` 同理。重启 Claude Code 生效。
 
 ### 全部 skill 一起装
 
@@ -53,7 +54,7 @@ git clone https://github.com/limin112/min-skill.git .claude/skills/minli-skill
 
 ```bash
 claude plugin details minli-skill
-#   Skills (6)  digital-human-koubo, explain-video, freetoken-bots, handwriting-stand-up, hdr-video, wechat-publish-template
+#   Skills (7)  copy-kakasi, digital-human-koubo, explain-video, freetoken-bots, handwriting-stand-up, hdr-video, wechat-publish-template
 ```
 
 > **Windows cmd.exe 用户**：第 1 步改成 `cd /d %USERPROFILE%`，第 2 步原样跑就行（路径分隔符用 `/` 现代 git 也接受）。

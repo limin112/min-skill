@@ -1,0 +1,2 @@
+#!/bin/bash
+echo "${STUB_GPUS:-0, 24000}"

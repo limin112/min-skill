@@ -1,0 +1,5 @@
+#!/bin/bash
+# 假 scp：host:path 当本机路径
+n=$#; d=${!n}; m=$((n-1)); s=${!m}
+echo "SCP $s -> $d" >> "$AUDIT/ssh.log"
+cp "${s#*:}" "${d#*:}"
