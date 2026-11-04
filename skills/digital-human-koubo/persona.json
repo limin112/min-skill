@@ -1,12 +1,11 @@
 {
- "_how": "机器、模型和通用表演配置。角色不在这里：skill 自带的角色库在 assets/cast/library.json，每个项目的阵容写在项目目录的 cast.json",
+ "_how": "机器、模型和通用表演配置。角色不在这里：skill 自带的角色库在 assets/cast/library.json，每个项目的阵容写在项目目录的 cast.json。机器地址和路径都是占位符：改这里，或者写一份 persona.local.json（不进 git，只写要覆盖的项，见 references/install.md）",
  "h3": {
   "ssh_hosts": [
-   "worker2",
-   "worker2-ts"
+   "<H3 机器的 ssh 别名>"
   ],
-  "lan_ip": "192.168.0.66",
-  "root": "/data/amin/h3",
+  "lan_ip": "<ComfyUI 在 H3 机器上监听的地址，如 127.0.0.1>",
+  "root": "<H3 目录，下面有 ComfyUI/ 和启动脚本>",
   "ports": [
    8188,
    8190
@@ -62,22 +61,21 @@
    "steps": 8,
    "node": "custom_nodes/ComfyUI-MiniMax-H3-Turbo（Larryvrh，Apache-2.0）",
    "download": "scripts/h3_setup_accel.sh"
-  }
+  },
+  "run_as": ""
  },
  "image": {
-  "ssh_host": "docker3",
+  "ssh_host": "<文生图机器的 ssh 别名>",
   "gpus": [
    0,
    1
   ],
   "need_mb": 30000,
-  "weights": "/home/amin/models/MOSS-Image-Base",
-  "trainer": "/home/amin/moss-sfhq289-lora/vendor/kohakumoss-0.1.0",
-  "venv": "/home/amin/moss-sfhq289-lora/.venv-train",
-  "work": "/workspace/data/dh-koubo",
-  "loras": {
-   "moss01": "/workspace/data/moss-moss01-lora/runs/moss01-lora/export/moss01-lora-lycoris.safetensors"
-  },
+  "weights": "<MOSS-Image 权重目录>",
+  "trainer": "<训练工具包目录>",
+  "venv": "<虚拟环境目录>",
+  "work": "<远端临时工作目录>",
+  "loras": {},
   "lora_weight": 1.0,
   "model": "MOSS-Image-Base（OpenMOSS，本地文生图）"
  },

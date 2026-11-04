@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""口播稿 → worker2 上的 MiniMax H3（ComfyUI）分段出片：画面 + 原生配音一起出。
+"""口播稿 → 你自己部署的 MiniMax H3（ComfyUI，机器地址在 persona.json）分段出片：画面 + 原生配音一起出。
 
 用法（在工程目录里跑）：
   python3 h3.py build script.json tasks.json [--fast] [--no-accel]
@@ -30,8 +30,12 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
 P = json.loads((HERE / "persona.json").read_text())
+_local = HERE / "persona.local.json"     # 不进 git：写自己的机器地址，只写要覆盖的项
+if _local.exists():
+    for _k, _v in json.loads(_local.read_text()).items():
+        P[_k] = {**P[_k], **_v} if isinstance(_v, dict) and isinstance(P.get(_k), dict) else _v
 H3 = P["h3"]
-ROOT = H3["root"]                       # /data/amin/h3
+ROOT = H3["root"]
 COMFY = f"{ROOT}/ComfyUI"
 STATE_REMOTE = f"{ROOT}/logs/dh_koubo_server.json"
 SSH_OPTS = ["-o", "ConnectTimeout=20", "-o", "ServerAliveInterval=10", "-o", "BatchMode=yes"]
@@ -51,14 +55,16 @@ def arg(name, default=None):
 # ---------------- 连接 ----------------
 _host = None
 def host():
-    """worker2 局域网直连优先，连不上走 Tailscale（worker2-ts）。H3_SSH 可以强制指定。"""
+    """按 persona.h3.ssh_hosts 依次试，第一个连得上的用（比如局域网优先、VPN 备用）。H3_SSH 可以强制指定。"""
     global _host
     if _host: return _host
     cands = [os.environ["H3_SSH"]] if os.environ.get("H3_SSH") else H3["ssh_hosts"]
+    todo = [k for k, v in (("ssh_hosts", cands[0] if cands else "<空>"), ("lan_ip", H3["lan_ip"]), ("root", H3["root"])) if str(v).startswith("<")]
+    if todo: sys.exit(f"H3 机器还没配置（{', '.join(todo)}）：改 persona.json → h3，或写 persona.local.json。见 references/install.md")
     for h in cands:
         if subprocess.run(["ssh", *SSH_OPTS, "-o", "ConnectTimeout=8", h, "true"], capture_output=True).returncode == 0:
             _host = h; return h
-    sys.exit(f"连不上 worker2（试过 {', '.join(cands)}）。检查 Tailscale / 局域网，或 export H3_SSH=<ssh 别名>")
+    sys.exit(f"连不上 H3 机器（试过 {', '.join(cands)}）。检查网络和 ssh 配置，或 export H3_SSH=<ssh 别名>")
 
 
 def rsh(cmd, data=None, check=True):
@@ -242,8 +248,11 @@ def start_servers(n):
         elif mb >= H3["share_need_mb"]: dyn = 1
         else:
             print(f"GPU{gpu} 只剩 {mb} MB，不在上面起实例"); continue
-        out = rsh(f"sudo -u amin env CUDA_DEV={gpu} DYNVRAM={dyn} bash {ROOT}/{script}")
-        pid = int(re.search(r"pid=(\d+)", out).group(1))
+        run_as = f"sudo -u {shlex.quote(H3['run_as'])} " if H3.get("run_as") else ""     # ComfyUI 要以另一个用户运行时才配
+        out = rsh(f"{run_as}env CUDA_DEV={gpu} DYNVRAM={dyn} bash {ROOT}/{script}")
+        m = re.search(r"pid=(\d+)", out)
+        if not m: sys.exit(f"{script} 没有打印 pid=<进程号>，没法登记（约定见 references/h3.md）")
+        pid = int(m.group(1))
         used.add(gpu); mine["servers"].append({"pid": pid, "gpu": gpu, "port": port, "dynvram": dyn, "at": time.strftime("%F %T")})
         rsh(f"echo {shlex.quote(json.dumps(mine))} > {STATE_REMOTE}")
         print(f"在 GPU{gpu} 上起了 ComfyUI :{port}（pid {pid}，{'共存' if dyn else '独占'}模式，空闲 {mb} MB）", flush=True)

@@ -11,4 +11,4 @@ H3 的参考模式（`MiniMaxH3ReferenceToVideo`）能吃最多 3 段参考音�
 ## 用自己的声音
 - 只克隆本人或明确授权的声音。
 - 本地没有部署开源 TTS 时，最稳的办法是：整片用 H3 原声，只在画外音 / 场景段用自己录的旁白（主播嘴闭着：提示词写 `says in an off-screen voiceover … while her lips remain completely closed`）。
-- worker2 上有 MuseTalk 1.5（`musetalk-lipsync` skill）：先用 H3 出带动作的口播，再用自己的配音让 MuseTalk 重对口型。MuseTalk 只改嘴，头部动作全来自 H3 视频。
+- 可以配合 MuseTalk 1.5：先用 H3 出带动作的口播，再用自己的配音让 MuseTalk 重对口型。MuseTalk 只改嘴，头部动作全来自 H3 视频。

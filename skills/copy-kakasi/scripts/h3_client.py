@@ -124,7 +124,7 @@ def start_servers(n):
         if mb < C["share_need_mb"]:
             print(f"GPU{gpu} 只剩 {mb} MB（至少要 {C['share_need_mb']} MB），不在上面起实例", flush=True); used.add(gpu); continue
         dyn = 0 if mb >= C["solo_need_mb"] else 1
-        cmd = C["start_command"].format(gpu=gpu, port=port, dynvram=dyn)
+        cmd = C["start_command"].replace("{gpu}", str(gpu)).replace("{port}", str(port)).replace("{dynvram}", str(dyn))   # 不用 format：命令里可能有别的花括号
         m = re.search(r"pid=(\d+)", rsh(cmd))
         if not m: sys.exit("start_command 没有打印 pid=<进程号>，没法登记（见 templates/start_comfy.sh）")
         used.add(gpu); mine["servers"].append({"pid": int(m[1]), "gpu": gpu, "port": port, "dynvram": dyn, "at": time.strftime("%F %T")}); _save(mine)

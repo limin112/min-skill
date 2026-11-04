@@ -1,10 +1,10 @@
 #!/bin/bash
 # 给 H3 的 ComfyUI 装 Turbo 加速：自定义节点 + 加速 LoRA，全部走 ModelScope（国内机器连不上 HuggingFace 也能装）。
 # 用法（在装 H3 的机器上跑，或 ssh 过去跑）：
-#   COMFY=/data/amin/h3/ComfyUI bash h3_setup_accel.sh
+#   COMFY=/path/to/ComfyUI bash h3_setup_accel.sh
 # 装完重启 ComfyUI。已经有的文件会断点续传 / 跳过。
 set -euo pipefail
-COMFY=${COMFY:-/data/amin/h3/ComfyUI}
+COMFY=${COMFY:?先指定 COMFY=/path/to/ComfyUI}
 MS=https://www.modelscope.cn/models
 cd "$COMFY"
 

@@ -2,11 +2,11 @@
 """H3 镜头 → 成片。在工程根目录跑。
 
   python3 finish.py grade [--only 03,22]   gen/NN.mp4 → 重采样回原镜头帧数 → 去油腻调色 → 1080p → graded/NN.mp4
-  python3 finish.py cut [--allow-original] graded/ 按 edl 拼接 + ref/audio.wav + AI 标识 + 水印 + 歌词 → out/<片名>_复刻.mp4 + out/manifest.json
+  python3 finish.py cut [--allow-original] graded/ 按 edl 拼接 + ref/audio.wav + 可选的标识、水印、歌词 → out/<片名>_复刻.mp4 + out/manifest.json
   python3 finish.py compare                上原片下复刻的对照版 → out/对照_上原片_下复刻.mp4
 
 cut：有镜头没出片时默认停下；--allow-original 才用原片顶上（写进 manifest）。keep_orig 的镜头本来就用原片。
-AI 标识（左下角）总会烧进成片，文字可用 project.json 的 ai_label 改，不能留空。水印 watermark 可选（右下角）。
+可选：project.json 的 ai_label 写了就烧在左下角并写进文件元数据；watermark 写了就烧在右下角。
 
 去油腻（H3 的通病：皮肤发亮、高光发硬、饱和偏高、锐化过头）：
   1. 颜色向原片同一镜头靠：Lab 空间均值/标准差迁移（strength 0.7，留一点 H3 自己的光）
@@ -25,11 +25,6 @@ W, H = P.get("size", [1024, 576])
 OW, OH = P.get("out_size", [1920, 1080])
 STRENGTH = P.get("grade_strength", 0.7)
 GRAIN = P.get("grain", 7)
-
-
-def ai_text():
-    """AI 标识的文字：可以改，不能留空"""
-    return P.get("ai_label") or ("AI 生成 · 仅供学习研究" if P.get("source_rights") == "study-only" else "AI 生成")
 
 
 def read_frames(path, vf="", size=(W, H)):
@@ -113,8 +108,10 @@ def cut():
     (ROOT / "graded/list.txt").write_text("".join(lst))
     total = sum(e["frames"] for e in E) / 24; fo = load_fade()
     inputs = ["-f", "concat", "-safe", "0", "-i", str(ROOT / "graded/list.txt"), "-i", str(ROOT / "ref/audio.wav")]
-    inputs += ["-i", str(label_png(ai_text(), "ai_label", round(OH * 0.031)))]
-    fc, cur, k = f"[0:v][2:v]overlay={round(OW * 0.023)}:H-h-{round(OH * 0.033)}[ai];", "ai", 3
+    fc, cur, k = "", "0:v", 2
+    if P.get("ai_label"):
+        inputs += ["-i", str(label_png(P["ai_label"], "ai_label", round(OH * 0.031)))]
+        fc += f"[{cur}][{k}:v]overlay={round(OW * 0.023)}:H-h-{round(OH * 0.033)}[ai];"; cur, k = "ai", k + 1
     if P.get("watermark"):
         inputs += ["-i", str(label_png(P["watermark"], "watermark", round(OH * 0.031)))]
         fc += f"[{cur}][{k}:v]overlay=W-w-{round(OW * 0.023)}:H-h-{round(OH * 0.033)}[w];"; cur, k = "w", k + 1
@@ -127,7 +124,7 @@ def cut():
     fc += f"[{cur}]fade=t=out:st={total - fo:.2f}:d={fo - 0.03:.2f}[v]"
     subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-y", *inputs, "-filter_complex", fc, "-map", "[v]", "-map", "1:a",
                     "-c:v", "libx264", "-crf", "26", "-preset", "slow", "-tune", "film", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "256k",
-                    "-metadata", f"comment={ai_text()}",
+                    *(["-metadata", f"comment={P['ai_label']}"] if P.get("ai_label") else []),
                     "-shortest", "-movflags", "+faststart", str(out_path())], check=True)
     mb = out_path().stat().st_size / 1e6
     write_manifest(E, S, missing, kept, rights)
@@ -148,7 +145,7 @@ def write_manifest(E, S, missing, kept, rights):
                      "first_frame": h3_fl.key(n, "a").parent.name, "last_frame": None if s.get("first_only") else h3_fl.key(n, "b").parent.name,
                      "frame_qa_failed": [t for t in "ab" if (ROOT / f"keys/repaint/{n}_{t}.qa_fail").exists()],
                      "video_qa": None if qa is None else {"ok": qa.get("ok"), "issues": qa.get("issues", [])}})
-    (ROOT / "out/manifest.json").write_text(json.dumps({"title": P.get("title"), "source_rights": rights, "ai_label": ai_text(), "shots": rows}, ensure_ascii=False, indent=1))
+    (ROOT / "out/manifest.json").write_text(json.dumps({"title": P.get("title"), "source_rights": rights, "ai_label": P.get("ai_label"), "shots": rows}, ensure_ascii=False, indent=1))
 
 
 def load_fade():

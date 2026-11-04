@@ -16,6 +16,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
 M = json.loads((HERE / "persona.json").read_text())["image"]
+_local = HERE / "persona.local.json"     # 不进 git：写自己的机器地址，只写要覆盖的项
+if _local.exists(): M = {**M, **json.loads(_local.read_text()).get("image", {})}
 SSH = ["ssh", "-o", "ConnectTimeout=30", "-o", "ServerAliveInterval=10", "-o", "BatchMode=yes", M["ssh_host"]]
 SIZES = {"9:16": [1360, 768], "16:9": [768, 1360], "1:1": [1024, 1024], "3:4": [1184, 896], "4:3": [896, 1184]}  # [H, W]，都是 16 的倍数
 
@@ -27,6 +29,8 @@ def rsh(cmd, check=True):
 
 
 def main():
+    todo = [k for k in ("ssh_host", "weights", "trainer", "venv", "work") if str(M[k]).startswith("<")]
+    if todo: sys.exit(f"文生图机器还没配置（{', '.join(todo)}）：改 persona.json → image，或写 persona.local.json。见 references/install.md")
     ap = argparse.ArgumentParser()
     ap.add_argument("--prompt"); ap.add_argument("--prompts"); ap.add_argument("--negative", default="")
     ap.add_argument("--lora", default=""); ap.add_argument("--ratio", default="9:16")

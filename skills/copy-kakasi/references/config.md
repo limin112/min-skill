@@ -13,7 +13,7 @@
  "out_size": [1920, 1080],
  "style": "Live-action, photorealistic, shot on 35mm film: soft diffused natural light, gentle natural film grain, slightly muted colors, natural matte skin with visible pores and fine texture, no oily shine, no sweat, no glossy highlights, no plastic or waxy skin, no beauty filter, no HDR, no over-sharpening",
  "ambience": "Quiet natural ambience, soft wind.",   // H3 自带的环境音（成片用原歌，这里只是让 H3 别出人声和音乐）
- "ai_label": "AI 生成",                     // 可选：左下角 AI 标识的文字。可以改，不能留空（留空用默认）
+ "ai_label": "AI 生成",                     // 可选：写了就烧在左下角，并写进文件元数据
  "watermark": "@你的名字",                   // 可选：右下角水印
  "job": "my_remake",                        // 可选：H3 机器上 input/output 的子目录名，只能用字母数字下划线连字符；不写自动生成
  "seed": 20261111,
@@ -45,26 +45,24 @@
 ## cast.json：角色
 ```json
 {
- "M": {"name": "the man", "label": "男主", "consent": "fictional", "adult": true, "method": "swap",
+ "M": {"name": "the man", "label": "男主", "consent": "fictional", "method": "swap",
        "refs": ["cast/male_front.png"]},
- "F": {"name": "the woman", "label": "女主", "consent": "self", "adult": true, "method": "repaint",
+ "F": {"name": "the woman", "label": "女主", "consent": "self", "method": "repaint",
        "refs": ["cast/me_1.png", "cast/me_2.png", "cast/me_3.png", "cast/me_side.png"],
        "identity": "the same soft rounded face shape, full cheeks and jawline, the same eyes, eyelids, eyebrows, the same rounded nose tip, full lips and skin tone",
        "accessory": "thin round wire-rim glasses with clear lenses"},
- "P": {"name": "the friend", "consent": "consented", "adult": true, "consent_record": "cast/consent_friend.txt", "method": "repaint",
+ "P": {"name": "the friend", "consent": "consented", "method": "repaint",
        "refs": ["cast/friend_1.png"]}
 }
 ```
 - `consent`：`self`（用户本人）/ `consented`（本人明确同意）/ `fictional`（AI 生成的虚构人）。别的值脚本直接退出。
-- `adult`：必须是 `true`。
-- `consent_record`：`consented` 必填，指向工程里一份非空的文本：谁、何时、同意用在什么片子。
 - `method`：`swap` 直接换（只用 `refs[0]`）；`repaint` 打码后重画（用全部 `refs`，`identity` 写脸的特征）。`faces.py joint` 对所有写了 `pose` 的角色生效。
 - `label`：确认页上的显示名，可选。
 - `refs`：裁到脸和肩、光线清楚、没有别人。repaint 时 2–4 张不同角度 + 1 张侧脸最好。
 - `accessory`：一直戴着的东西（眼镜、耳环）。换脸和 H3 提示词里都会带上"一直戴着、不闪烁、不变形"。
 - `where`：joint 模式下这个角色在画面里的位置（"on the left"），可选。
 
-这些字段只是记录，脚本验证不了真假。核实靠问用户。
+`consent` 脚本验证不了真假，核实靠问用户。
 
 ## shots.json：每个镜头
 ```json

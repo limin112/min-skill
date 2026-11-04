@@ -8,7 +8,10 @@
 """
 import hashlib, importlib, shlex, shutil, subprocess, sys, urllib.request
 sys.dont_write_bytecode = True
-from common import config, config_path, font_path, image_conf, models_dir, ocr_ready
+try:
+    from common import config, config_path, font_path, image_conf, models_dir, ocr_ready
+except ImportError as e:      # 自检不能因为缺依赖自己先崩
+    sys.exit(f"  ✗ python 缺 {e.name}：pip3 install -r requirements.txt")
 
 MODELS = {
     "face_detection_yunet_2023mar.onnx": ("https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx",
@@ -44,12 +47,14 @@ def local():
     if shutil.which("ffmpeg"):
         enc = subprocess.run(["ffmpeg", "-hide_banner", "-encoders"], capture_output=True, text=True).stdout
         ok("ffmpeg 有 libx264") if "libx264" in enc else no("ffmpeg 没有 libx264")
-    for m, pip in (("PIL", "pillow"), ("numpy", "numpy"), ("cv2", "opencv-python")):
+    for m, pip in (("PIL", "pillow"), ("numpy", "numpy"), ("cv2", "'opencv-python-headless<5'")):
         try: importlib.import_module(m); ok(f"python: {m}")
         except ImportError: no(f"python 缺 {m}（pip3 install {pip}）")
     try:
         import cv2
-        ok("OpenCV 有 YuNet/SFace") if hasattr(cv2, "FaceDetectorYN") and hasattr(cv2, "FaceRecognizerSF") else no("OpenCV 太旧，要 ≥ 4.8")
+        need = ("CascadeClassifier", "FaceDetectorYN", "FaceRecognizerSF")
+        lack = [n for n in need if not hasattr(cv2, n)]
+        ok(f"OpenCV {cv2.__version__}") if not lack else no(f"OpenCV {cv2.__version__} 缺 {', '.join(lack)}：pip3 install 'opencv-python-headless>=4.8,<5'")
     except ImportError: pass
     ok(f"字体 {font_path()}") if font_path() else no("找不到中文字体（水印、AI 标识要用）：装 fonts-noto-cjk，或 configure.py --font <路径>")
     ok("烧录字幕 OCR（macOS Vision）") if ocr_ready() else warn("不是 macOS：scan.py ocr 和 clean_text 用不了；歌词让用户给文本，字幕靠 src_crop 裁掉")

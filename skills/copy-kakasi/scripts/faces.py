@@ -22,8 +22,15 @@ import cv2
 import numpy as np
 from common import ROOT, KEY_W, KEY_H, CONSENT_TXT, MAX_IMAGES, cast, ocr_ready, project, shots, edit_image, image_why, opt, only
 
-CASC = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-PROF = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_profileface.xml")
+_CASC = None
+def cascades():
+    """用到自动检脸才加载；OpenCV 版本不对时说清楚，别让整个脚本一启动就崩"""
+    global _CASC
+    if _CASC is None:
+        if not hasattr(cv2, "CascadeClassifier"):
+            sys.exit(f"OpenCV {cv2.__version__} 没有 CascadeClassifier：pip3 install 'opencv-python-headless>=4.8,<5'，或在 shots.json 的 box 里手标人脸")
+        _CASC = [cv2.CascadeClassifier(cv2.data.haarcascades + f"haarcascade_{n}.xml") for n in ("frontalface_default", "profileface")]
+    return _CASC
 NOOIL = "Skin looks natural and matte with fine pores: no oily shine, no sweat, no glossy highlights, no plastic or waxy skin, no beauty filter."
 DRY = "--dry" in sys.argv
 
@@ -59,6 +66,7 @@ def swap_one(n, tag, s, C):
 
 # ---------- repaint ----------
 def find_face(img, hint=None):
+    CASC, PROF = cascades()
     g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     fs = list(CASC.detectMultiScale(g, 1.08, 5, minSize=(80, 80)))
     if not fs:

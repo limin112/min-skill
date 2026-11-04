@@ -1,3 +1,3 @@
 {
- "A": {"name": "the woman", "label": "女主", "consent": "fictional", "adult": true, "method": "swap", "refs": ["cast/fictional_woman.png"]}
+ "A": {"name": "the woman", "label": "女主", "consent": "fictional", "method": "swap", "refs": ["cast/fictional_woman.png"]}
 }

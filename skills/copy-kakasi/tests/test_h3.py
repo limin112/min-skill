@@ -96,6 +96,55 @@ def test_enqueue_failure_cleans_uploaded_frames(ctx, comfy):
     assert "SCP" in ctx.ssh_log() and not (comfy.root / "input/testjob").exists()
 
 
+def _pid_alive(pid):
+    return subprocess.run(["ps", "-p", pid, "-o", "stat="], capture_output=True, text=True).stdout.strip() not in ("", "Z")
+
+
+def _real_start(ctx, comfy):
+    script = ctx.tmp / "start.sh"
+    script.write_text(f'#!/bin/bash\n(exec -a main.py sleep 120) > /dev/null 2>&1 < /dev/null &\npid=$!\necho pid=$pid\necho $pid > {ctx.tmp}/pid\n')
+    _with_start(ctx, comfy, f"bash {script} '{{{{literal}}}}' {{gpu}}")      # 命令里有别的花括号也不能崩
+    import threading
+    threading.Timer(2, lambda: setattr(comfy, "live", True)).start()
+
+
+def test_enqueue_failure_stops_the_server_it_started(ctx, comfy):
+    ctx.project(); comfy.enqueue_ok = False; _real_start(ctx, comfy)
+    r = ctx.run("h3_fl.py", "run")
+    assert r.returncode == 1 and "已停掉" in r.stdout, r.stdout + r.stderr
+    time.sleep(0.3)
+    assert not _pid_alive((ctx.tmp / "pid").read_text().strip())
+
+
+def test_download_failure_resumes_without_regenerating(ctx, comfy):
+    """取片失败：不崩，不丢帧；修好后重跑接着取，不重复生成"""
+    d = ctx.project()
+    stubs = ctx.tmp / "broken"; stubs.mkdir(); bad = stubs / "scp"
+    bad.write_text('#!/bin/bash\nn=$#; d=${!n}\ncase "$d" in *gen/*) exit 1;; esac\nm=$((n-1)); s=${!m}; cp "${s#*:}" "${d#*:}"\n'); bad.chmod(0o755)
+    r = ctx.run("h3_fl.py", "run", env={"PATH": f"{stubs}:{ctx.env['PATH']}"})
+    assert r.returncode == 1 and "Traceback" not in r.stderr and "接着等" in r.stdout, r.stdout + r.stderr
+    assert (comfy.root / "input/testjob").exists() and len(comfy.prompts) == 1
+    assert ctx.run("h3_fl.py", "run").returncode == 0 and (d / "gen/00.mp4").exists()
+    assert len(comfy.prompts) == 1, "重复生成了"
+
+
+def test_missing_style_is_clear(ctx):
+    d = ctx.project(); P = json.loads((d / "project.json").read_text()); del P["style"]; (d / "project.json").write_text(json.dumps(P))
+    r = ctx.run("h3_fl.py", "print")
+    assert r.returncode != 0 and "style" in r.stderr and "Traceback" not in r.stderr
+
+
+def test_setup_script_requires_comfy_and_installs(ctx):
+    from conftest import REPO
+    sh = REPO / "scripts/h3_setup_accel.sh"
+    assert subprocess.run(["bash", str(sh)], capture_output=True, env={**ctx.env, "COMFY": ""}).returncode != 0
+    root = ctx.tmp / "C"; (root / "custom_nodes/ComfyUI-MiniMax-H3-Turbo").mkdir(parents=True); (root / "custom_nodes/ComfyUI-MiniMax-H3-Turbo/__init__.py").write_text("")
+    stubs = ctx.tmp / "net"; stubs.mkdir(); c = stubs / "curl"
+    c.write_text('#!/bin/bash\nwhile [ $# -gt 0 ]; do [ "$1" = -o ] && touch "$2"; shift; done\n'); c.chmod(0o755)
+    r = subprocess.run(["bash", str(sh)], capture_output=True, text=True, env={**ctx.env, "COMFY": str(root), "PATH": f"{stubs}:{ctx.env['PATH']}"})
+    assert r.returncode == 0 and (root / "models/loras/minimax_h3_turbo_v4_step600_ema.safetensors").exists(), r.stderr
+
+
 def test_failed_shot_exit_code_and_summary(ctx, comfy):
     d = ctx.project(); comfy.shot_ok = False
     r = ctx.run("h3_fl.py", "run")

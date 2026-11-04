@@ -45,7 +45,7 @@ class Ctx:
         P = {"title": "t", "source": "x.mp4", "source_rights": "own", "size": [1024, 576], "out_size": [640, 360], "style": "a period film on a city wall", "job": "testjob", **(project or {})}
         box = {"F_a": [600, 200, 800, 450], "F_b": [600, 200, 800, 450]}
         S = shots or [{"n": "00", "who": ["F"], "desc": "d", "pose": {"F_a": "p", "F_b": "p"}, "box": box}]
-        C = cast or {"F": {"name": "the woman", "consent": "self", "adult": True, "method": "repaint", "refs": ["cast/r.png"], "identity": "same face"}}
+        C = cast or {"F": {"name": "the woman", "consent": "self", "method": "repaint", "refs": ["cast/r.png"], "identity": "same face"}}
         (d / "project.json").write_text(json.dumps(P)); (d / "shots.json").write_text(json.dumps(S)); (d / "cast.json").write_text(json.dumps(C))
         (d / "ref/edl.json").write_text(json.dumps({"source": "x", "audio": {"fade_out": 0.5}, "shots": [
             {"n": int(s["n"]), "act": "a", "lyric": "", "shot": 0, "src_in": 0, "frames": frames, "dur": frames / 24} for s in S]}))
