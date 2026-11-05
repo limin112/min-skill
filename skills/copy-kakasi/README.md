@@ -4,6 +4,8 @@
 
 *Remake a video shot by shot with a different cast (yourself, a consenting adult, or a fictional AI character), using your own self-hosted MiniMax H3. Docs are in Chinese.*
 
+▶ **演示**：[demo.mp4](examples/demo.mp4)（30 秒 · 1080p · 9 MB）· **推文**：[https://x.com/MinLiBuilds/status/2118188301123514550](https://x.com/MinLiBuilds/status/2118188301123514550)
+
 ```
 原片 ─▶ 切镜头 ─▶ 选镜头、剪歌 ─▶ 取首尾帧 ─▶ 换脸 / 打码重画（图像模型）
                                                 │  无限画布确认页，逐镜头通过或提意见
@@ -15,9 +17,6 @@
 
 ## 使用边界，先看
 - **人**：只能换成你本人、本人明确同意的成年人、AI 虚构角色。不做未成年人，不做公众人物，不做未经同意的真人。责任在使用者。
-- **原片**：用你有权使用的视频。别人的作品没有授权时，是否算合理使用取决于当地法律，这个工具不替你判断。不提供下载、去台标、去水印的功能。
-- **标识**：默认不加。H3 协议要求公开的内容标明是机器生成，公开发布时自己注明，或在 `project.json` 写 `ai_label` 烧进画面。
-- **模型**：[MiniMax H3 社区协议](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE)的授权地区**不含欧盟、英国、韩国、美国**，并限制侵权、冒充他人等用途。你要自己确认能否使用。
 
 MIT 协议只覆盖这个仓库的代码，详见 [NOTICE.md](NOTICE.md)。这不是法律意见。
 
