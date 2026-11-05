@@ -10,3 +10,4 @@ projects/
 *.onnx
 *.safetensors
 config.json
+!examples/demo.mp4
