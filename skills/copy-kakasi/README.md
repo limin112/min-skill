@@ -1,8 +1,8 @@
 # copyKakasi
 
-**一镜一镜重拍一段视频，只把演员换成你。** 一个 [Claude Code](https://claude.com/claude-code) Skill：构图、机位、动作、节奏、配乐都照原片，演员换成你本人、明确同意的成年人或 AI 虚构角色。全程用你自己部署的 MiniMax H3，不接云端视频服务。
+**一镜一镜重拍一段视频，只把演员换成你。** 一个 [Claude Code](https://claude.com/claude-code) Skill：构图、机位、动作、节奏、配乐都照原片，演员换成你本人、明确同意的成年人或 AI 虚构角色。目前在本地 MiniMax H3 + Codex（gpt-image）上跑通；换远程视频 API 同理，把首尾帧生成这一步换掉就行，仓库里暂未内置。
 
-*Remake a video shot by shot with a different cast (yourself, a consenting adult, or a fictional AI character), using your own self-hosted MiniMax H3. Docs are in Chinese.*
+*Remake a video shot by shot with a different cast (yourself, a consenting adult, or a fictional AI character), tested end to end with local MiniMax H3 + Codex (gpt-image). A remote video API works the same way by swapping the first/last-frame generation step, though none is built in yet. Docs are in Chinese.*
 
 ▶ **演示**：[demo.mp4](examples/demo.mp4)（30 秒 · 1080p · 9 MB）· **推文**：[https://x.com/MinLiBuilds/status/2118188301123514550](https://x.com/MinLiBuilds/status/2118188301123514550)
 
@@ -27,7 +27,7 @@ MIT 协议只覆盖这个仓库的代码，详见 [NOTICE.md](NOTICE.md)。这�
 | 视频生成 | **你自己的 NVIDIA 显卡 + MiniMax H3（ComfyUI）**，在本机或能 ssh 的机器上。[部署说明](references/h3-setup.md) |
 | 换脸出图 | [Codex CLI](https://github.com/openai/codex)（默认），或[任何实现了简单接口的图像服务](references/image-providers.md) |
 
-**没有显卡**：切镜头、选镜头、换脸都能做，也能在确认页看结果；生成视频这一步要等你有 H3。
+**没有显卡**：切镜头、选镜头、换脸都能做，也能在确认页看结果；生成视频这一步要等你有 H3，或自己接好远程视频 API。
 
 ## 安装
 ```bash
