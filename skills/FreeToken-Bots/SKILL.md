@@ -41,7 +41,7 @@ Notes:
 - Require `tools` in `supported_parameters` for child-agent candidates; independently probe tool-calling before production use. An ordinary completion probe is **not** proof of tool support.
 - Never route to a paid model automatically. A 402, quota-exhausted response, or rate limit is not a reason to remove the user's existing Pi provider configuration.
 - **Fail-closed model resolution (v0.1.1):** `probe --model` never trusts a hand-typed ID. It is resolved against the latest free scan: an exact verified-free ID is used as-is; a missing `:free` suffix is auto-corrected with a loud warning (dropping it silently routes to the PAID variant — this exact mistake cost a live call once); any other ID is refused outright. A stale (>24h) scan is refreshed before resolving.
-- Do not put API keys in Git or print key values. Prompt for `OPENROUTER_API_KEY` if live probing is requested and unset.
+- Do not put API keys in Git or print key values. If the host offers a masked secret-input feature (e.g. Grok Bot's secret-request card that stores the value as env var `OPENROUTER_API_KEY` and never shows it in chat), request the key that way; never ask the user to paste the key into chat. If the user already pasted a key in chat, warn them and advise rotating it at https://openrouter.ai/keys. Scripts read the key only from the environment and never print or log it.
 - Pi settings should not be rewritten without preserving user providers/defaults and validating the installed Pi's schema.
 - All unattended `pi -p` calls must use `</dev/null`.
 
