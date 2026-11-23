@@ -53,8 +53,9 @@ class ServerTests(ServerCase):
         with urllib.request.urlopen(self.base + '/v1/models') as r:
             ids = [m['id'] for m in json.load(r)['data']]
         self.assertEqual(ids[0], 'auto')
-        self.assertIn('opencode/good-free', ids)
-        for bad in ('openrouter/vendor/paid-model', 'opencode/paid-zen', 'opencode/msgs-only-free'):
+        self.assertIn('openrouter/vendor/second:free', ids)
+        for bad in ('openrouter/vendor/paid-model', 'opencode/paid-zen', 'opencode/good-free',
+                    'opencode/msgs-only-free'):
             self.assertNotIn(bad, ids)
 
     def test_chat_non_stream(self):

@@ -51,3 +51,5 @@ class MockCase(unittest.TestCase):
     def assertNoPaidCalls(self):
         paid = {'vendor/big-free', 'vendor/paid-model', 'paid-zen'}
         self.assertFalse(paid & set(self.upstream_models()), self.upstream_models())
+        zen = [m for prov, m, _ in self.mock.calls if prov == 'zen']
+        self.assertEqual(zen, [], 'Zen free tier is OpenCode-client-only; the router must never call it')
