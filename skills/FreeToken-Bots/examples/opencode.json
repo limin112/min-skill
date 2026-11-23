@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "freetoken": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "FreeToken-Bots",
+      "options": {
+        "baseURL": "http://127.0.0.1:8787/v1",
+        "apiKey": "ftb-local"
+      },
+      "models": {
+        "auto": {
+          "name": "FreeToken auto (free only)",
+          "tool_call": true,
+          "limit": {
+            "context": 128000,
+            "output": 16384
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "providers": {
+    "openrouter": {
+      "enabled": true,
+      "api_key_env": "OPENROUTER_API_KEY",
+      "catalog_url": "https://openrouter.ai/api/v1/models",
+      "base_url": "https://openrouter.ai/api/v1",
+      "allowed_hosts": [
+        "openrouter.ai"
+      ]
+    },
+    "opencode": {
+      "enabled": true,
+      "api_key_env": "OPENCODE_API_KEY",
+      "catalog_url": "https://opencode.ai/zen/v1/models",
+      "base_url": null,
+      "allowed_hosts": [
+        "opencode.ai"
+      ],
+      "allow_anonymous": false
+    }
+  },
+  "router": {
+    "host": "127.0.0.1",
+    "port": 8787,
+    "api_key_env": "FTB_ROUTER_KEY",
+    "catalog_max_age_hours": 24,
+    "refresh_interval_hours": 6,
+    "first_byte_timeout": 120,
+    "max_attempts": 6,
+    "unknown_model": "auto"
+  },
+  "routing": {
+    "prefer": [],
+    "exclude": [],
+    "min_context": 32000,
+    "pinned_fallback": true,
+    "allow_meta_router": true
+  },
+  "report": {
+    "expiring_days": 7
+  }
+}
