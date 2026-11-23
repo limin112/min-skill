@@ -25,6 +25,7 @@ Skill：放在 `skills/` 下，Claude Code 加载后按需求自动触发。
 | 工具 | 干什么 | 适用 |
 |---|---|---|
 | [**uu-term-bridge**](tools/uu-term-bridge) | 让网易UU远程手机端的终端列表看到并接管 Mac 上 iTerm2 的每个标签，手机新开的终端在 Mac 自动弹窗 | [1 分钟，开源模型原生支持移动端](https://x.com/MinLiBuilds/status/2096238709381476424?s=20) |
+| [**deep-live-cam-web**](tools/deep-live-cam-web) | **一张照片实时换脸直播**的网页工作台：照片库一键切换、弹窗给 OBS、画面固定延迟对口型。Apple 芯片 Mac 本机跑（CoreML，M5 实测 720p 21 fps），也能连 NVIDIA 显卡服务器 | Mac / Linux + NVIDIA |
 
 ## 安装
 
@@ -111,6 +112,7 @@ min-skill/
 │   ├── hdr-video/                  ← SKILL.md + scripts/ + references/
 │   └── wechat-publish-template/    ← SKILL.md + assets/ + references/ + evals/
 └── tools/                          ← 独立工具，不是 skill，手动安装
+    ├── deep-live-cam-web/          ← install.sh + start.sh + remote.sh + web_server.py + index.html
     └── uu-term-bridge/             ← install.sh + bin/ + test/
 ```
 
@@ -121,4 +123,4 @@ min-skill/
 
 ## License
 
-MIT
+MIT。`tools/deep-live-cam-web` 例外，按 AGPL-3.0（和它调用的上游 Deep-Live-Cam 一致），见该目录下的 LICENSE。
