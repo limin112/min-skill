@@ -1,0 +1,6 @@
+# 安装时生成，不进仓库
+.uvtool/
+.python/
+.venv/
+Deep-Live-Cam/
+web_data/

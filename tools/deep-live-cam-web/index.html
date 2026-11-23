@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实时换脸</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --line: #262b36; --text: #e7e9ee; --muted: #9aa3b2;
+    --accent: #4f8cff; --ok: #2fbf71; --warn: #f0a630; --bad: #ef5350;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif; }
+  .app { display: grid; grid-template-columns: 360px 1fr; height: 100vh; }
+  aside { border-right: 1px solid var(--line); overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  h1 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
+  .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: #2a2f3a; color: var(--muted); font-weight: 400; }
+  .pill.ok { background: rgba(47,191,113,.15); color: var(--ok); }
+  .pill.bad { background: rgba(239,83,80,.15); color: var(--bad); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .card h2 { font-size: 15px; margin: 0; }
+  .drop { border: 1.5px dashed #3a4150; border-radius: 8px; padding: 14px; text-align: center; color: var(--muted); cursor: pointer; transition: .15s; }
+  .drop:hover, .drop.over { border-color: var(--accent); color: var(--text); background: rgba(79,140,255,.06); }
+  .faces { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .face { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer;
+    border: 2px solid transparent; background: #222; transition: border-color .12s, transform .12s; }
+  .face:hover { border-color: #4a5366; }
+  .face.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,140,255,.35); }
+  .face img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .face .num { position: absolute; left: 4px; top: 3px; font: 600 11px/1.4 ui-monospace, Menlo, monospace;
+    background: rgba(0,0,0,.6); color: #fff; padding: 0 4px; border-radius: 4px; }
+  .face .del { position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; padding: 0; border: none;
+    border-radius: 50%; background: rgba(0,0,0,.7); color: #fff; font-size: 14px; line-height: 20px; display: none; }
+  .face:hover .del { display: block; }
+  .face .del:hover { background: var(--bad); }
+  .face.warned::after { content: "!"; position: absolute; right: 4px; bottom: 3px; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--warn); color: #000; font: 700 11px/16px sans-serif; text-align: center; }
+  .face.add { border: 1.5px dashed #3a4150; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 26px; background: transparent; }
+  .face.add:hover, .card.over .face.add { border-color: var(--accent); color: var(--text); }
+  .card.over { border-color: var(--accent); }
+  .meta { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .meta b { color: var(--text); font-weight: 500; }
+  .warn { color: var(--warn); font-size: 12px; }
+  .err { color: var(--bad); font-size: 12px; }
+  label.row { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  .row small { color: var(--muted); }
+  select, button, input[type=file] { font: inherit; color: var(--text); }
+  select { width: 100%; background: #0f1218; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button { background: #262c38; border: 1px solid #333a48; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  button:hover:not(:disabled) { border-color: #4a5366; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button.danger { background: var(--bad); border-color: var(--bad); color: #fff; font-weight: 600; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 13px; }
+  .stats div span { color: var(--muted); }
+  .hint { font-size: 12px; color: var(--muted); }
+  .bar { height: 8px; background: #0f1218; border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  main { position: relative; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; }
+  #stage { max-width: 100%; max-height: 100%; display: none; }
+  #placeholder { color: var(--muted); text-align: center; padding: 24px; }
+  #banner { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.65);
+    padding: 6px 14px; border-radius: 99px; font-size: 13px; display: none; }
+  #hud { position: absolute; left: 12px; top: 12px; font: 12px/1.4 ui-monospace, Menlo, monospace; color: #8f8;
+    background: rgba(0,0,0,.45); padding: 4px 8px; border-radius: 6px; display: none; }
+  video.result { width: 100%; border-radius: 8px; background: #000; }
+  /* clean output mode for OBS window capture */
+  body.clean .app { grid-template-columns: 1fr; }
+  body.clean aside, body.clean #banner, body.clean #hud { display: none !important; }
+  body.clean main { cursor: none; }
+  .kbd { font: 11px ui-monospace, Menlo, monospace; border: 1px solid #444; border-radius: 4px; padding: 0 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <h1>实时换脸 <span id="conn" class="pill">未连接</span></h1>
+
+  <section class="card" id="faceCard">
+    <h2>① 换上谁的脸 <small class="hint" id="faceCount"></small></h2>
+    <div id="faceGrid" class="faces"></div>
+    <input id="photo" type="file" accept="image/*" multiple hidden>
+    <div id="activeInfo" class="meta"></div>
+    <div id="srcWarn" class="warn"></div>
+    <div id="srcErr" class="err"></div>
+    <div class="hint">点照片就切换，直播中也能切；数字键 <span class="kbd">1</span>–<span class="kbd">9</span> 快速切换。可一次选或拖入多张，清楚的正脸效果最好。</div>
+  </section>
+
+  <section class="card">
+    <h2>② 实时直播（摄像头）</h2>
+    <div class="grid2">
+      <select id="camera" title="摄像头"><option value="">默认摄像头</option></select>
+      <select id="res" title="分辨率">
+        <option value="640x480">480p（最流畅）</option>
+        <option value="1280x720" selected>720p</option>
+        <option value="1920x1080">1080p（较慢）</option>
+      </select>
+    </div>
+    <select id="mode" title="网络模式" style="margin-top:8px">
+      <option value="fluent">流畅优先（远程连接用）</option>
+      <option value="lowlat" selected>低延迟优先（本机推荐）</option>
+    </select>
+    <select id="avDelay" title="画面固定延迟（音画同步用）" style="margin-top:8px">
+      <option value="0" selected>固定延迟：关</option>
+      <option value="200">固定延迟 200 ms（本机）</option>
+      <option value="250">固定延迟 250 ms（网络很好）</option>
+      <option value="350">固定延迟 350 ms（远程 480p）</option>
+      <option value="450">固定延迟 450 ms（远程 720p）</option>
+      <option value="600">固定延迟 600 ms（网络较差）</option>
+    </select>
+    <div class="hint" id="avHint">音画同步：OBS 里麦克风的「高级音频属性 → 同步偏移」设成同样的毫秒数。画面上「迟到」超过 5% 就选大一档。</div>
+    <label class="row"><input type="checkbox" id="mirror" checked> 镜像 <small>（像照镜子）</small></label>
+    <label class="row"><input type="checkbox" id="enhancer"> 画质增强 <small>（更清晰，帧率约减半）</small></label>
+    <label class="row"><input type="checkbox" id="mouth"> 保留自己的嘴 <small>（说话口型更自然）</small></label>
+    <label class="row"><input type="checkbox" id="compare"> 并排对比原画面</label>
+    <label class="row"><input type="checkbox" id="showHud" checked> 画面上显示帧率</label>
+    <div class="grid2">
+      <button id="startBtn" class="primary">开始</button>
+      <button id="cleanBtn" disabled>纯净画面</button>
+    </div>
+    <button id="popBtn" disabled>弹出输出窗口（给 OBS 采集）</button>
+    <div class="stats">
+      <div><span>帧率</span> <b id="sFps">–</b></div>
+      <div><span>延迟</span> <b id="sLat">–</b></div>
+      <div><span>服务器处理</span> <b id="sSrv">–</b></div>
+      <div><span>人脸</span> <b id="sFace">–</b></div>
+    </div>
+    <div class="hint" id="obsHint">OBS：添加「窗口采集」选这个浏览器窗口（或弹出的输出窗口），声音用 OBS 里的麦克风。直播时别把这个窗口最小化。</div>
+  </section>
+
+  <section class="card">
+    <h2>③ 视频换脸（上传视频）</h2>
+    <div class="hint">用上面当前选中的照片换脸。</div>
+    <input id="video" type="file" accept="video/*">
+    <label class="row"><input type="checkbox" id="vidEnh"> 画质增强 <small>（慢约 4 倍）</small></label>
+    <button id="vidBtn" disabled>开始处理</button>
+    <div id="vidBox" hidden>
+      <div class="hint" id="vidStatus"></div>
+      <div class="bar"><i id="vidBar"></i></div>
+    </div>
+    <div id="vidErr" class="err"></div>
+    <div id="vidResult" hidden>
+      <video id="vidPlayer" class="result" controls playsinline></video>
+      <p><a id="vidDl" href="#" download><button class="primary" style="width:100%">下载换脸视频</button></a></p>
+    </div>
+  </section>
+
+  <div class="hint">照片和视频只保存在运行服务的这台电脑上。只用 AI 生成的脸，或已经征得本人同意的照片。
+    服务闲置 <span id="idleMin">60</span> 分钟会自动关闭以释放显卡，下次运行 start_web.command 即可。</div>
+</aside>
+
+<main>
+  <canvas id="stage"></canvas>
+  <div id="placeholder">先在左边上传照片，再点「开始」<br><small>浏览器会询问摄像头权限，请点允许</small></div>
+  <div id="banner"></div>
+  <div id="hud"></div>
+</main>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const stage = $('#stage'), sctx = stage.getContext('2d');
+const capCanvas = document.createElement('canvas'), cctx = capCanvas.getContext('2d');
+const video = document.createElement('video');
+video.muted = true; video.playsInline = true;
+
+const S = { running: false, ws: null, stream: null, inflight: 0, encoding: false,
+  lat: [], srv: [], frames: 0, lastStatT: performance.now(), face: null, noSource: false,
+  popup: null, popCtx: null, reconnectTimer: null, hasSource: false };
+// frames allowed on the wire at once: over a slow link fps ~= inflight / round-trip,
+// so remote use needs a deeper pipeline (more delay, much higher fps)
+const MODES = { fluent: { inflight: 8, q: 0.75, srvQ: 75 }, lowlat: { inflight: 2, q: 0.82, srvQ: 85 } };
+function mode() { return MODES[$('#mode').value] || MODES.fluent; }
+
+// ---------------- helpers
+function setConn(text, cls) { const c = $('#conn'); c.textContent = text; c.className = 'pill ' + (cls || ''); }
+function banner(text) { const b = $('#banner'); b.textContent = text || ''; b.style.display = text ? 'block' : 'none'; }
+function median(a) { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); return s[s.length >> 1]; }
+
+// ---------------- photo library (several photos, click / 1-9 to switch)
+S.faces = []; S.active = null; S.uploading = false;
+function renderFaces(lib) {
+  if (lib) { S.faces = lib.faces || []; S.active = lib.active || null; }
+  S.hasSource = !!S.active;
+  const grid = $('#faceGrid');
+  grid.replaceChildren();
+  S.faces.forEach((f, i) => {
+    const d = document.createElement('div');
+    d.className = 'face' + (f.id === S.active ? ' active' : '') + ((f.warnings || []).length ? ' warned' : '');
+    d.title = `${f.name}${i < 9 ? '（按 ' + (i + 1) + ' 切换）' : ''}`;
+    const img = document.createElement('img'); img.src = f.thumb; img.alt = f.name; d.appendChild(img);
+    if (i < 9) { const n = document.createElement('span'); n.className = 'num'; n.textContent = i + 1; d.appendChild(n); }
+    const del = document.createElement('button'); del.className = 'del'; del.title = '删除这张'; del.textContent = '×';
+    del.onclick = (e) => { e.stopPropagation(); deleteFace(f); };
+    d.appendChild(del);
+    d.onclick = () => activateFace(f.id);
+    grid.appendChild(d);
+  });
+  const add = document.createElement('div');
+  add.className = 'face add'; add.title = '添加照片（可多选）';
+  add.textContent = S.uploading ? '…' : '+';
+  add.onclick = () => $('#photo').click();
+  grid.appendChild(add);
+  $('#faceCount').textContent = S.faces.length ? `${S.faces.length} 张` : '';
+  const cur = S.faces.find(f => f.id === S.active);
+  $('#activeInfo').innerHTML = '';
+  $('#srcWarn').innerHTML = '';
+  if (cur) {
+    const b = document.createElement('b'); b.textContent = cur.name;
+    $('#activeInfo').append('当前：', b, ` · 脸宽 ${cur.face_width}px`);
+    $('#srcWarn').textContent = (cur.warnings || []).map(w => '⚠ ' + w).join('\n');
+    $('#srcWarn').style.whiteSpace = 'pre-line';
+  } else if (!S.faces.length) {
+    $('#activeInfo').textContent = '还没有照片，点 + 添加';
+  }
+  updateButtons();
+}
+async function uploadPhotos(files) {
+  files = [...(files || [])].filter(f => f.type.startsWith('image/') || /\.(jpe?g|png|webp|bmp)$/i.test(f.name));
+  if (!files.length) return;
+  $('#srcErr').textContent = ''; S.uploading = true; renderFaces();
+  $('#activeInfo').textContent = `上传并检测人脸中（${files.length} 张）…`;
+  const fd = new FormData(); files.forEach(f => fd.append('file', f, f.name));
+  try {
+    const j = await (await fetch('/api/faces', { method: 'POST', body: fd })).json();
+    S.uploading = false;
+    const bad = (j.results || []).filter(r => !r.ok);
+    $('#srcErr').textContent = bad.map(r => `${r.name}：${r.error}`).join('\n') || (j.ok === false && j.error ? j.error : '');
+    $('#srcErr').style.whiteSpace = 'pre-line';
+    renderFaces(j);
+  } catch (e) { S.uploading = false; renderFaces(); $('#srcErr').textContent = '上传失败：' + e; }
+}
+async function activateFace(id) {
+  if (!id || id === S.active) return;
+  S.active = id; renderFaces();  // instant feedback; the next frames use the new face
+  try { renderFaces(await (await fetch(`/api/faces/${id}/activate`, { method: 'POST' })).json()); }
+  catch (e) { $('#srcErr').textContent = '切换失败：' + e; }
+}
+async function deleteFace(f) {
+  if (!confirm(`删除「${f.name}」？`)) return;
+  try { renderFaces(await (await fetch(`/api/faces/${f.id}`, { method: 'DELETE' })).json()); }
+  catch (e) { $('#srcErr').textContent = '删除失败：' + e; }
+}
+$('#photo').onchange = (e) => { uploadPhotos(e.target.files); e.target.value = ''; };
+const faceCard = $('#faceCard');
+for (const ev of ['dragenter', 'dragover']) faceCard.addEventListener(ev, e => { e.preventDefault(); faceCard.classList.add('over'); });
+for (const ev of ['dragleave', 'drop']) faceCard.addEventListener(ev, e => { e.preventDefault(); if (ev === 'drop' || !faceCard.contains(e.relatedTarget)) faceCard.classList.remove('over'); });
+faceCard.addEventListener('drop', e => uploadPhotos(e.dataTransfer.files));
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if (e.key >= '1' && e.key <= '9') { const f = S.faces.at(Number(e.key) - 1); if (f) activateFace(f.id); }
+});
+
+// ---------------- camera
+async function listCameras() {
+  try {
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    const sel = $('#camera'), cur = sel.value;
+    sel.innerHTML = '<option value="">默认摄像头</option>' +
+      devs.map((d, i) => `<option value="${d.deviceId}">${d.label || '摄像头 ' + (i + 1)}</option>`).join('');
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  } catch (e) { /* ignore */ }
+}
+async function openCamera() {
+  closeCamera();
+  const [w, h] = $('#res').value.split('x').map(Number);
+  const cam = $('#camera').value;
+  S.stream = await navigator.mediaDevices.getUserMedia({ audio: false,
+    video: { width: { ideal: w }, height: { ideal: h }, frameRate: { ideal: 30 }, ...(cam ? { deviceId: { exact: cam } } : {}) } });
+  video.srcObject = S.stream;
+  await video.play();
+  listCameras();
+}
+function closeCamera() {
+  if (S.stream) S.stream.getTracks().forEach(t => t.stop());
+  S.stream = null; video.srcObject = null;
+}
+
+// ---------------- websocket
+function wsUrl() { return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws'; }
+function sendSettings() {
+  if (S.ws && S.ws.readyState === 1)
+    S.ws.send(JSON.stringify({ type: 'settings', enhancer: $('#enhancer').checked, mouth_mask: $('#mouth').checked, jpeg_q: mode().srvQ }));
+}
+function connect() {
+  clearTimeout(S.reconnectTimer);
+  const ws = new WebSocket(wsUrl());
+  ws.binaryType = 'arraybuffer';
+  S.ws = ws; S.inflight = 0;
+  setConn('连接中…');
+  ws.onopen = () => { setConn('已连接', 'ok'); banner(''); sendSettings(); };
+  ws.onmessage = (ev) => {
+    if (typeof ev.data === 'string') {
+      try { const m = JSON.parse(ev.data); if (m.type === 'settings') { $('#enhancer').checked = m.enhancer; $('#mouth').checked = m.mouth_mask; } } catch (e) {}
+      return;
+    }
+    S.inflight = Math.max(0, S.inflight - 1);
+    const dv = new DataView(ev.data);
+    const ts = dv.getFloat64(0, true), srvMs = dv.getFloat32(8, true), flags = dv.getUint8(12);
+    if (flags & 2) return;  // dropped frame
+    S.lat.push(performance.now() - ts); S.srv.push(srvMs);
+    if (S.lat.length > 60) { S.lat.shift(); S.srv.shift(); }
+    S.frames++; S.face = !!(flags & 1); S.noSource = !!(flags & 4);
+    createImageBitmap(new Blob([new Uint8Array(ev.data, 13)], { type: 'image/jpeg' })).then((b) => scheduleFrame(ts, b)).catch(() => {});
+  };
+  ws.onclose = (ev) => {
+    if (S.ws !== ws) return;
+    if (ev.code === 4000) { setConn('已被其他页面接管', 'bad'); banner('另一个页面开始了直播，这里已停止'); stop(); return; }
+    setConn('已断开', 'bad');
+    if (S.running) { banner('与服务器的连接断开，正在重连…'); S.reconnectTimer = setTimeout(connect, 1500); }
+  };
+}
+
+// ---------------- capture -> send (driven by a worker timer so it keeps going when the tab is in the background)
+const ticker = new Worker(URL.createObjectURL(new Blob(
+  ['let t=null;onmessage=e=>{clearInterval(t);if(e.data>0)t=setInterval(()=>postMessage(0),e.data)}'], { type: 'text/javascript' })));
+ticker.onmessage = captureTick;
+function captureTick() {
+  if (!S.running || !S.ws || S.ws.readyState !== 1 || S.encoding || S.inflight >= mode().inflight) return;
+  if (video.readyState < 2 || !video.videoWidth) return;
+  const capT = performance.now();  // stamp at capture, so the fixed delay is measured from the camera frame
+  const w = video.videoWidth, h = video.videoHeight;
+  if (capCanvas.width !== w || capCanvas.height !== h) { capCanvas.width = w; capCanvas.height = h; }
+  cctx.save();
+  if ($('#mirror').checked) { cctx.translate(w, 0); cctx.scale(-1, 1); }
+  cctx.drawImage(video, 0, 0, w, h);
+  cctx.restore();
+  S.encoding = true;
+  capCanvas.toBlob(async (blob) => {
+    try {
+      if (!blob || !S.ws || S.ws.readyState !== 1) return;
+      const jpg = new Uint8Array(await blob.arrayBuffer());
+      const buf = new Uint8Array(8 + jpg.length);
+      new DataView(buf.buffer).setFloat64(0, capT, true);
+      buf.set(jpg, 8);
+      S.inflight++;
+      S.ws.send(buf);
+    } finally { S.encoding = false; }
+  }, 'image/jpeg', mode().q);
+}
+
+// ---------------- fixed-delay playout (makes video delay constant so OBS audio offset can match it)
+// every frame is shown at capture time + D; frames later than that are shown as soon as they arrive.
+const PLAY = { q: [], lastTs: -1, late: 0, total: 0 };
+function avDelay() { return +$('#avDelay').value || 0; }
+function showFrame(ts, bmp) {
+  if (ts > PLAY.lastTs) { PLAY.lastTs = ts; drawResult(bmp); } else bmp.close();  // never go back in time
+}
+function scheduleFrame(ts, bmp) {
+  const D = avDelay();
+  if (!D) { showFrame(ts, bmp); return; }
+  PLAY.total++;
+  if (ts + D < performance.now()) PLAY.late++;
+  PLAY.q.push({ ts, bmp }); PLAY.q.sort((a, b) => a.ts - b.ts);
+}
+function playoutTick() {
+  const now = performance.now(), D = avDelay();
+  let due = null;
+  while (PLAY.q.length && (!D || PLAY.q[0].ts + D <= now)) {
+    const f = PLAY.q.shift();
+    if (due) due.bmp.close();
+    due = f;
+  }
+  if (due) showFrame(due.ts, due.bmp);
+}
+function resetPlayout() { PLAY.q.forEach((f) => f.bmp.close()); PLAY.q = []; PLAY.lastTs = -1; PLAY.late = 0; PLAY.total = 0; }
+// a worker timer keeps playout going when the tab is in the background (like the capture ticker)
+const playTicker = new Worker(URL.createObjectURL(new Blob(
+  ['setInterval(()=>postMessage(0),8)'], { type: 'text/javascript' })));
+playTicker.onmessage = playoutTick;
+
+// ---------------- draw
+function drawResult(bmp) {
+  const cmp = $('#compare').checked;
+  const W = cmp ? bmp.width * 2 : bmp.width, H = bmp.height;
+  if (stage.width !== W || stage.height !== H) { stage.width = W; stage.height = H; }
+  if (cmp) { sctx.drawImage(capCanvas, 0, 0, bmp.width, H); sctx.drawImage(bmp, bmp.width, 0); }
+  else sctx.drawImage(bmp, 0, 0);
+  if (S.popup && !S.popup.closed && S.popCtx) {
+    const pc = S.popCtx.canvas;
+    if (pc.width !== bmp.width || pc.height !== bmp.height) { pc.width = bmp.width; pc.height = bmp.height; }
+    S.popCtx.drawImage(bmp, 0, 0);
+  }
+  bmp.close();
+  stage.style.display = 'block'; $('#placeholder').style.display = 'none';
+}
+
+// stats every 500 ms
+setInterval(() => {
+  const now = performance.now(), dt = (now - S.lastStatT) / 1000;
+  const fps = S.frames / dt; S.frames = 0; S.lastStatT = now;
+  if (!S.running) return;
+  const lat = median(S.lat), srv = median(S.srv);
+  $('#sFps').textContent = fps.toFixed(0);
+  $('#sLat').textContent = isNaN(lat) ? '–' : Math.round(lat) + ' ms';
+  $('#sSrv').textContent = isNaN(srv) ? '–' : Math.round(srv) + ' ms';
+  $('#sFace').textContent = S.noSource ? '未上传照片' : (S.face == null ? '–' : (S.face ? '✓ 已换脸' : '未检测到'));
+  $('#sFace').style.color = S.noSource || S.face === false ? 'var(--warn)' : '';
+  const hud = $('#hud');
+  hud.style.display = $('#showHud').checked && S.running ? 'block' : 'none';
+  const D = avDelay(), latePct = PLAY.total ? Math.round(100 * PLAY.late / PLAY.total) : 0;
+  hud.textContent = `${fps.toFixed(0)} fps · 网络 ${isNaN(lat) ? '–' : Math.round(lat)} ms` + (D ? ` · 固定 ${D} ms · 迟到 ${latePct}%` : '');
+  if (PLAY.total > 300) { PLAY.late = Math.round(PLAY.late / 2); PLAY.total = Math.round(PLAY.total / 2); }  // recent-weighted
+  if (S.ws && S.ws.readyState === 1) banner(S.noSource ? '还没上传照片，现在显示的是原画面' : '');
+}, 500);
+
+// ---------------- start / stop
+async function start() {
+  if (!window.isSecureContext || !navigator.mediaDevices) {
+    banner('浏览器只允许在 http://localhost 下用摄像头，请用 start_web.command 打开'); return;
+  }
+  $('#startBtn').disabled = true;
+  try { await openCamera(); }
+  catch (e) {
+    banner(e.name === 'NotAllowedError' ? '摄像头权限被拒绝：请在地址栏左侧允许摄像头后重试' : '打不开摄像头：' + e.message);
+    $('#startBtn').disabled = false; return;
+  }
+  S.running = true; S.lat = []; S.srv = []; resetPlayout();
+  connect();
+  ticker.postMessage(1000 / 30);
+  updateButtons();
+}
+function stop() {
+  S.running = false;
+  resetPlayout();
+  ticker.postMessage(0);
+  clearTimeout(S.reconnectTimer);
+  if (S.ws) { const ws = S.ws; S.ws = null; try { ws.close(); } catch (e) {} }
+  closeCamera();
+  setConn('未连接');
+  $('#hud').style.display = 'none';
+  document.body.classList.remove('clean');
+  updateButtons();
+}
+function updateButtons() {
+  const b = $('#startBtn');
+  b.disabled = false;
+  b.textContent = S.running ? '停止' : '开始';
+  b.className = S.running ? 'danger' : 'primary';
+  $('#cleanBtn').disabled = !S.running; $('#popBtn').disabled = !S.running;
+  $('#vidBtn').disabled = !S.hasSource || !$('#video').files.length || S.vidRunning;
+}
+$('#startBtn').onclick = () => (S.running ? stop() : start());
+$('#enhancer').onchange = sendSettings;
+$('#mouth').onchange = sendSettings;
+$('#mode').onchange = sendSettings;
+$('#avDelay').onchange = () => { PLAY.late = 0; PLAY.total = 0; };
+for (const id of ['#camera', '#res']) $(id).onchange = async () => {
+  if (!S.running) return;
+  try { await openCamera(); } catch (e) { banner('切换摄像头失败：' + e.message); }
+};
+
+// clean mode (UI hidden, for window capture); Esc / double-click exits
+$('#cleanBtn').onclick = () => document.body.classList.add('clean');
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.body.classList.remove('clean'); });
+$('main').addEventListener('dblclick', () => document.body.classList.toggle('clean'));
+
+// pop-out output window: just the swapped picture, nothing else
+$('#popBtn').onclick = () => {
+  if (S.popup && !S.popup.closed) { S.popup.focus(); return; }
+  const p = window.open('', 'dlc_output', 'popup,width=1280,height=720');
+  if (!p) { banner('弹窗被浏览器拦截了，请允许本站弹出窗口'); return; }
+  p.document.write('<!doctype html><title>换脸输出</title><style>html,body{margin:0;height:100%;background:#000;overflow:hidden}' +
+    'canvas{width:100%;height:100%;object-fit:contain;display:block}</style><canvas></canvas>');
+  p.document.close();
+  S.popup = p; S.popCtx = p.document.querySelector('canvas').getContext('2d');
+};
+
+// ---------------- video job
+$('#video').onchange = updateButtons;
+$('#vidBtn').onclick = () => {
+  const f = $('#video').files[0]; if (!f) return;
+  $('#vidErr').textContent = ''; $('#vidResult').hidden = true; $('#vidBox').hidden = false;
+  S.vidRunning = true; updateButtons();
+  const fd = new FormData(); fd.append('file', f, f.name);
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/video?enhancer=' + ($('#vidEnh').checked ? 1 : 0));
+  xhr.upload.onprogress = e => { if (e.lengthComputable) { $('#vidStatus').textContent = `上传中 ${Math.round(e.loaded / e.total * 100)}%`; $('#vidBar').style.width = (e.loaded / e.total * 100) + '%'; } };
+  xhr.onload = () => {
+    let j = {}; try { j = JSON.parse(xhr.responseText); } catch (e) {}
+    if (!j.ok) { $('#vidErr').textContent = j.error || ('上传失败 ' + xhr.status); S.vidRunning = false; $('#vidBox').hidden = true; updateButtons(); return; }
+    pollJob(j.job.id);
+  };
+  xhr.onerror = () => { $('#vidErr').textContent = '上传失败（网络错误）'; S.vidRunning = false; updateButtons(); };
+  xhr.send(fd);
+};
+async function pollJob(id) {
+  try {
+    const j = (await (await fetch('/api/job/' + id)).json()).job;
+    if (j.status === 'running') {
+      $('#vidStatus').textContent = `处理中 ${Math.round(j.progress * 100)}% · 已用 ${Math.round(j.elapsed)} 秒`;
+      $('#vidBar').style.width = (j.progress * 100) + '%';
+      setTimeout(() => pollJob(id), 1000); return;
+    }
+    S.vidRunning = false; updateButtons();
+    if (j.status === 'done') {
+      $('#vidStatus').textContent = `完成，用时 ${Math.round(j.elapsed)} 秒`; $('#vidBar').style.width = '100%';
+      const url = '/api/job/' + id + '/download';
+      $('#vidPlayer').src = url; $('#vidDl').href = url + '?dl=1'; $('#vidResult').hidden = false;
+    } else { $('#vidErr').textContent = j.error || '处理失败'; $('#vidBox').hidden = true; }
+  } catch (e) { setTimeout(() => pollJob(id), 2000); }
+}
+
+// ---------------- init
+(async () => {
+  try {
+    const st = await (await fetch('/api/state')).json();
+    renderFaces(st);
+    $('#enhancer').checked = st.settings.enhancer; $('#mouth').checked = st.settings.mouth_mask;
+    $('#idleMin').textContent = st.idle_exit_min;
+    const running = (st.jobs || []).find(j => j.status === 'running');
+    if (running) { $('#vidBox').hidden = false; S.vidRunning = true; pollJob(running.id); }
+    setConn('服务正常', 'ok');
+  } catch (e) { setConn('连不上服务器', 'bad'); }
+  if (!window.isSecureContext) banner('请用 http://localhost:8765 打开本页（运行 start_web.command），否则浏览器不允许使用摄像头');
+  listCameras();
+})();
+window.addEventListener('beforeunload', () => { if (S.popup && !S.popup.closed) S.popup.close(); });
+</script>
+</body>
+</html>
