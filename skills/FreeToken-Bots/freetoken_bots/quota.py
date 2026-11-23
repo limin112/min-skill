@@ -22,9 +22,10 @@ DOCUMENTED = {
     },
     'opencode': {
         'source': 'https://opencode.ai/docs/zen',
+        'access': 'Free-tier chat models require OpenCode (official docs); not callable from other clients',
         'free_requests_per_day': 'not published',
-        'note': ('No quota API. Limits are learned from 429 FreeUsageLimitError + retry-after. '
-                 'Free models are limited-time; check OpenCode terms on data use during free periods.'),
+        'data_use': ('some free models (e.g. Big Pickle, Tidepool Alpha, Iceman, Flint 40B) may retain or '
+                     'use data to improve the model during the free period - see the Privacy section'),
     },
 }
 
@@ -227,9 +228,9 @@ def provider_quota(cfg, state, provider, live=True):
             info['live'] = {'error': str(exc)[:120]}
     elif provider == 'opencode':
         info['live'] = 'unavailable: OpenCode Zen exposes no quota/usage API'
-    if provider == 'opencode' and not key:
-        allow = cfg['providers']['opencode'].get('allow_anonymous')
-        info['access'] = 'anonymous (opted in)' if allow else 'monitor-only until OPENCODE_API_KEY is set'
+        info['api_key'] = 'not needed'
+        info['access'] = ('router: monitor-only. Use the free models inside OpenCode '
+                          '(`ftb opencode status`, `ftb delegate "task"`)')
     return info
 
 

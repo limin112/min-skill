@@ -8,9 +8,15 @@ Nothing here edits a user's config unless they run `ftb agent <id> --apply`
 (JSON configs only: backup first, adds only our own provider key, refuses to
 replace an existing one without --force).
 
+zen_free (OpenCode Zen free models, which official docs restrict to the OpenCode client):
+  native         the agent is OpenCode
+  delegate       the agent can run shell commands, so it can hand whole tasks to
+                 OpenCode with `ftb delegate "task"` (OpenCode does the work)
+  no             not possible
+
 status:
-  verified       run end-to-end against the router in this repo's integration
-                 test (scripts/integration_test.sh), version noted
+  verified       run end-to-end in this repo's tests (tests/integration_agents.py,
+                 or live for `delegate`), version noted
   documented     config taken from the agent's official docs, not run here
   not-supported  needs a protocol adapter that does not exist yet
 """
@@ -115,44 +121,52 @@ AGENTS = [
      'verified_with': 'pi 1.6.0',
      'how': 'Adds provider "freetoken" to <agent-dir>/models.json. `ftb agent pi --apply` merges it '
             '(backup + only our key). Then: pi --provider freetoken --model auto',
-     'config': ('json', 'models.json', pi_config)},
+     'config': ('json', 'models.json', pi_config), 'zen_free': 'delegate'},
     {'id': 'codex', 'name': 'Codex CLI', 'protocol': 'openai-responses', 'status': 'verified',
      'verified_with': 'codex-cli 0.163.0',
      'how': 'Codex only accepts wire_api="responses"; the router translates Responses <-> chat. '
             '`ftb run codex -- exec "..."` passes -c overrides, no config file edit.',
-     'config': ('toml', 'config.toml', codex_toml)},
+     'config': ('toml', 'config.toml', codex_toml), 'zen_free': 'delegate'},
     {'id': 'opencode', 'name': 'OpenCode', 'protocol': 'openai-chat', 'status': 'verified',
      'verified_with': 'opencode 1.19.6',
-     'how': '`ftb run opencode -- run "..."` injects OPENCODE_CONFIG_CONTENT (no file edit). '
-            'Or merge the JSON into opencode.json with `ftb agent opencode --apply`. '
-            'Model: freetoken/auto. Note: OpenCode also has Zen free models built in (in-product quota).',
-     'config': ('json', 'opencode.json', opencode_config)},
+     'how': 'Zen free models work natively (opencode/*-free, no key). For OpenRouter free models too: '
+            '`ftb opencode setup` (adds provider "freetoken"), or `ftb run opencode -- run "..."` '
+            '(no file edit). Model: freetoken/auto.',
+     'config': ('json', 'opencode.json', opencode_config), 'zen_free': 'native'},
     {'id': 'aider', 'name': 'Aider', 'protocol': 'openai-chat', 'status': 'documented',
      'how': 'aider --model openai/auto --openai-api-base <base> --openai-api-key <key>  '
             '(or `ftb run aider`). LiteLLM "openai/" prefix = generic OpenAI-compatible endpoint.',
-     'config': None},
+     'config': None, 'zen_free': 'delegate'},
     {'id': 'cline', 'name': 'Cline (VS Code)', 'protocol': 'openai-chat', 'status': 'documented',
      'how': 'Settings -> API Provider "OpenAI Compatible": Base URL <base>, API Key <key>, Model ID "auto".',
-     'config': None},
+     'config': None, 'zen_free': 'delegate'},
     {'id': 'roo', 'name': 'Roo Code (VS Code)', 'protocol': 'openai-chat', 'status': 'documented',
      'how': 'Settings -> API Provider "OpenAI Compatible": Base URL <base>, API Key <key>, Model "auto".',
-     'config': None},
+     'config': None, 'zen_free': 'delegate'},
     {'id': 'hermes', 'name': 'Hermes Agent (Nous Research)', 'protocol': 'openai-chat', 'status': 'documented',
      'how': 'Run `hermes model`, choose the custom OpenAI-compatible endpoint, base URL <base>, '
             'key <key>, model "auto". Config schema not verified locally.',
-     'config': None},
+     'config': None, 'zen_free': 'delegate'},
     {'id': 'generic', 'name': 'Any OpenAI-compatible client / SDK', 'protocol': 'openai-chat',
      'status': 'verified', 'verified_with': 'curl + python urllib (tests)',
      'how': 'OPENAI_BASE_URL=<base> OPENAI_API_KEY=<key>, model "auto" (or a key from /v1/models). '
             '`ftb run <any command>` exports both.',
-     'config': None},
+     'config': None, 'zen_free': 'no'},
+    {'id': 'delegate', 'name': 'Any agent that can run shell (Grokbot, Muse, Dot, Hermes, Claude Code...)',
+     'protocol': 'shell: ftb delegate', 'status': 'verified',
+     'verified_with': 'opencode 1.19.6 + live Zen beam-free',
+     'how': 'Give the agent a shell tool call: ftb delegate "<task>" --dir <repo>. OpenCode runs the task '
+            'on the best Zen free model (failover to other free models, then OpenRouter free via the '
+            'router if a key is set) and prints the result.',
+     'config': None, 'zen_free': 'native'},
     {'id': 'gemini', 'name': 'Gemini CLI', 'protocol': 'gemini-generateContent', 'status': 'not-supported',
      'how': 'Gemini CLI only speaks the Gemini API (generateContent). Needs a Gemini protocol adapter; '
-            'not implemented. Do not point it at the router.',
-     'config': None},
+            'not implemented. Do not point it at the router. Zen free models: via ftb delegate.',
+     'config': None, 'zen_free': 'delegate'},
     {'id': 'claude-code', 'name': 'Claude Code', 'protocol': 'anthropic-messages', 'status': 'not-supported',
-     'how': 'Deferred: needs an Anthropic Messages adapter (/v1/messages currently returns 501).',
-     'config': None},
+     'how': 'Router: deferred (needs an Anthropic Messages adapter; /v1/messages returns 501). '
+            'Zen free models: via ftb delegate.',
+     'config': None, 'zen_free': 'delegate'},
 ]
 
 

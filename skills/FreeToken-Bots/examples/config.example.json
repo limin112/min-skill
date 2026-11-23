@@ -11,13 +11,8 @@
     },
     "opencode": {
       "enabled": true,
-      "api_key_env": "OPENCODE_API_KEY",
-      "catalog_url": "https://opencode.ai/zen/v1/models",
-      "base_url": null,
-      "allowed_hosts": [
-        "opencode.ai"
-      ],
-      "allow_anonymous": false
+      "routable": false,
+      "catalog_url": "https://opencode.ai/zen/v1/models"
     }
   },
   "router": {

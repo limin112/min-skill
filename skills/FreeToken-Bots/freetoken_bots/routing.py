@@ -22,8 +22,7 @@ from . import quota as Q
 from .common import USER_AGENT, now, parse_iso, provider_key
 
 AUTO_ALIASES = {'auto', 'ftb/auto', 'free', 'ftb', 'ftb-auto', 'default'}
-PROVIDER_AUTO = {'ftb/auto-openrouter': 'openrouter', 'auto-openrouter': 'openrouter',
-                 'ftb/auto-opencode': 'opencode', 'auto-opencode': 'opencode'}
+PROVIDER_AUTO = {'ftb/auto-openrouter': 'openrouter', 'auto-openrouter': 'openrouter'}
 
 # Request fields that could make an upstream route to, or bill for, something
 # other than the exact free model we chose.
@@ -112,9 +111,11 @@ class Router:
         pc = self.cfg['providers'].get(provider) or {}
         if not pc.get('enabled', True):
             return False, 'disabled'
+        if pc.get('routable') is False:
+            return False, 'monitor-only: free tier is OpenCode-client-only (use OpenCode / ftb delegate)'
         if not C.provider_fresh(self.cat, provider, self.cfg['router']['catalog_max_age_hours']):
             return False, 'catalog stale or missing (fail-closed)'
-        if not provider_key(self.cfg, provider) and not (provider == 'opencode' and pc.get('allow_anonymous')):
+        if not provider_key(self.cfg, provider):
             return False, 'no API key (%s)' % pc.get('api_key_env')
         b = self.state.provider_blocked(provider)
         if b:
@@ -155,6 +156,10 @@ class Router:
             return None, PROVIDER_AUTO[r]
         try:
             key, _note = C.resolve_key(self.cat, r)
+            m = C.find(self.cat, key)
+            if not m.get('api_callable'):
+                raise RouteError(400, '%s is free but not callable through the router: %s' % (
+                    key, m.get('monitor_reason')), kind='monitor_only_model')
             return key, None
         except KeyError as exc:
             if 'NOT free' in str(exc):

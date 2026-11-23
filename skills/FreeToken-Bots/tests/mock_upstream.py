@@ -55,18 +55,19 @@ class MockState:
             or_model('vendor/big-free:free', FREE, total_parameters=400_000_000_000),
             or_model('vendor/big-free', PAID),                      # paid twin of the :free id
             or_model('vendor/quota:free', FREE, ctx=300000),
+            or_model('vendor/second:free', FREE, ctx=150000),
+            or_model('vendor/stream-error:free', FREE, ctx=100000),
             or_model('vendor/notools:free', FREE, tools=False),
             or_model('vendor/paid-model', PAID),
             or_model('openrouter/free', FREE),
         ]
         self.zen_models = [
             zen_model('good-free', 0),
-            zen_model('stream-error-free', 0),
             zen_model('paid-zen', 1.5),
             zen_model('msgs-only-free', 0, api='messages'),
         ]
         # model id -> behaviour; anything not listed is "ok"
-        self.behaviour = {'vendor/quota:free': 'daily_quota', 'stream-error-free': 'stream_error'}
+        self.behaviour = {'vendor/quota:free': 'daily_quota', 'vendor/stream-error:free': 'stream_error'}
         self.zen_base = None
 
     def record(self, provider, body):

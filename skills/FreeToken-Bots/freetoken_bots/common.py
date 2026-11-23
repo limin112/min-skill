@@ -22,16 +22,13 @@ DEFAULT_CONFIG = {
             'allowed_hosts': ['openrouter.ai'],
         },
         'opencode': {
+            # Monitoring only. OpenCode docs: "Free-tier chat models require
+            # OpenCode; use paid models or Go from other clients." The router never
+            # calls Zen; its free models are used through the OpenCode client
+            # (`ftb opencode`, `ftb delegate`).
             'enabled': True,
-            'api_key_env': 'OPENCODE_API_KEY',
+            'routable': False,
             'catalog_url': 'https://opencode.ai/zen/v1/models',
-            # None -> use the chat-completions base_url published in the catalog,
-            # but only if its host is in allowed_hosts.
-            'base_url': None,
-            'allowed_hosts': ['opencode.ai'],
-            # Anonymous Zen calls are throttled hard and OpenCode asks API users
-            # to sign in. Off by default; a free Zen API key is the supported path.
-            'allow_anonymous': False,
         },
     },
     'router': {
@@ -180,9 +177,74 @@ def http_json(url, key=None, payload=None, timeout=30, headers=None):
         raise HttpError(exc.code, body, dict(exc.headers or {}))
 
 
+# provider -> (display name, page that creates the key, what to click there)
+KEY_HELP = {
+    'openrouter': ('OpenRouter', 'https://openrouter.ai/settings/keys', 'Create API key'),
+}
+
+
+def key_help(provider):
+    name, url, step = KEY_HELP.get(provider, (provider, '', ''))
+    return name, url, '%s  ->  %s' % (url, step) if url else step
+
+
+def keys_file():
+    return path('keys.env')
+
+
+def load_keys():
+    """KEY=VALUE lines from ~/.freetoken-bots/keys.env (written by `ftb setup`)."""
+    out = {}
+    p = keys_file()
+    if not p.exists():
+        return out
+    for line in p.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        k, v = line.split('=', 1)
+        k = k.strip()
+        if k.startswith('export '):
+            k = k[7:].strip()
+        out[k] = v.strip().strip('"').strip("'")
+    return out
+
+
+def save_keys(values):
+    """Merge values into keys.env (0600). Empty values remove the entry."""
+    cur = load_keys()
+    for k, v in values.items():
+        if v:
+            cur[k] = v
+        else:
+            cur.pop(k, None)
+    text = '# FreeToken-Bots API keys (ftb setup). Environment variables take precedence.\n'
+    text += ''.join('%s=%s\n' % (k, v) for k, v in sorted(cur.items()))
+    atomic_text(keys_file(), text)
+    return keys_file()
+
+
+def keyed_providers(cfg):
+    """Providers the router calls with an API key (OpenCode Zen is client-only)."""
+    return [p for p, pc in cfg['providers'].items() if pc.get('api_key_env')]
+
+
+def key_source(cfg, provider):
+    env = cfg['providers'][provider].get('api_key_env')
+    if not env:
+        return None
+    if os.environ.get(env):
+        return 'env'
+    if load_keys().get(env):
+        return 'keys.env'
+    return None
+
+
 def provider_key(cfg, provider):
     env = cfg['providers'][provider].get('api_key_env')
-    return os.environ.get(env) if env else None
+    if not env:
+        return None
+    return os.environ.get(env) or load_keys().get(env)
 
 
 def mask(s):

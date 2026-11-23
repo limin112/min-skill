@@ -80,24 +80,29 @@ class ZenCost(unittest.TestCase):
         self.assertFalse(P.zen_cost_free({'text': {'input': {'price': 'tbd'}, 'output': {'price': 0}}}))
         self.assertFalse(P.zen_cost_free({'text': {'note': 'free!'}}))
 
-    def test_normalize_protocol_and_host(self):
+    def test_zen_free_is_opencode_client_only(self):
+        free = {'text': {'input': {'price': 0}, 'output': {'price': 0}}}
         raw = {'data': [
-            {'id': 'ok-free', 'type': 'chat', 'cost': {'text': {'input': {'price': 0}, 'output': {'price': 0}}},
-             'modalities': {'output': ['text']}, 'capabilities': {'tools': {'supported': True}},
+            {'id': 'ok-free', 'type': 'chat', 'cost': free, 'modalities': {'output': ['text']},
+             'capabilities': {'tools': {'supported': True}},
              'api': {'chat-completions': {'base_url': 'https://opencode.ai/inference/openai/v1'}}},
-            {'id': 'msgs-free', 'type': 'chat', 'cost': {'text': {'input': {'price': 0}, 'output': {'price': 0}}},
-             'modalities': {'output': ['text']}, 'recommended_api': 'messages',
+            {'id': 'msgs-free', 'type': 'chat', 'cost': free, 'modalities': {'output': ['text']},
              'api': {'messages': {'base_url': 'https://opencode.ai/inference/anthropic/v1'}}},
-            {'id': 'evil-free', 'type': 'chat', 'cost': {'text': {'input': {'price': 0}, 'output': {'price': 0}}},
-             'modalities': {'output': ['text']},
-             'api': {'chat-completions': {'base_url': 'https://attacker.example/v1'}}},
+            {'id': 'decision-free', 'type': 'decision', 'cost': free, 'modalities': {'output': ['text']},
+             'api': {'systemone': {}}},
+            {'id': 'paid', 'type': 'chat', 'cost': {'text': {'input': {'price': 1}, 'output': {'price': 2}}},
+             'modalities': {'output': ['text']}, 'api': {'chat-completions': {}}},
         ]}
-        ms = {m['id']: m for m in P.normalize_opencode(raw, {'allowed_hosts': ['opencode.ai']})}
-        self.assertTrue(ms['ok-free']['api_callable'])
+        ms = {m['id']: m for m in P.normalize_opencode(raw, {})}
+        for m in ms.values():
+            self.assertFalse(m['api_callable'], 'router must never call Zen: ' + m['id'])
+            self.assertIsNone(m['base_url'])
+        self.assertTrue(ms['ok-free']['opencode_client'])
+        self.assertTrue(ms['msgs-free']['opencode_client'], 'OpenCode itself speaks Anthropic Messages')
+        self.assertIn('require OpenCode', ms['ok-free']['monitor_reason'])
+        self.assertFalse(ms['decision-free']['opencode_client'])
+        self.assertFalse(ms['paid']['opencode_client'])
         self.assertTrue(ms['ok-free']['anonymous'])  # no canonical id, closed weights
-        self.assertFalse(ms['msgs-free']['api_callable'])
-        self.assertIn('messages', ms['msgs-free']['monitor_reason'])
-        self.assertFalse(ms['evil-free']['api_callable'], 'API key must never be sent to a foreign host')
 
 
 if __name__ == '__main__':

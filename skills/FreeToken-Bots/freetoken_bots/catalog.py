@@ -204,8 +204,9 @@ def build_report(cfg, cat=None, hours=24):
         'providers': cat.get('providers'),
         'free_total': len(free),
         'free_callable': sum(1 for m in free if m['api_callable']),
+        'free_opencode_client': [m['key'] for m in free if m.get('opencode_client')],
         'free_monitor_only': [{'key': m['key'], 'reason': m['monitor_reason']}
-                              for m in free if not m['api_callable']],
+                              for m in free if not m['api_callable'] and not m.get('opencode_client')],
         'anonymous_free': [m['key'] for m in free if m.get('anonymous')],
         'new_free': by_type.get('new_free', []) + by_type.get('became_free', []),
         'lost_free': by_type.get('no_longer_free', []) + by_type.get('delisted', []),
@@ -223,7 +224,8 @@ def report_markdown(r):
         L.append('- %s: %s, %s free / %s models%s' % (
             name, 'ok' if st.get('ok') else 'SCAN FAILED', st.get('free_count', '?'),
             st.get('model_count', '?'), (' - ' + st['error']) if st.get('error') else ''))
-    L.append('- free models: %d (API-callable via router: %d)' % (r['free_total'], r['free_callable']))
+    L.append('- free models: %d (via router, any agent: %d; inside OpenCode only: %d)' % (
+        r['free_total'], r['free_callable'], len(r.get('free_opencode_client') or [])))
     L += ['', '## New free models (%d)' % len(r['new_free'])]
     L += ['- `%s` %s%s%s' % (e['key'], e['name'], ' [anonymous]' if e.get('anonymous') else '',
                              '' if e.get('api_callable', True) else ' [monitor-only]')
@@ -243,11 +245,14 @@ def report_markdown(r):
         L += ['- `%s` %s' % (e['key'], e['type']) for e in r['terms_changed']]
     L += ['', '## Anonymous / undisclosed free models (heuristic)']
     L += ['- `%s`' % k for k in r['anonymous_free']] or ['- none']
+    if r.get('free_opencode_client'):
+        L += ['', '## OpenCode Zen free models (usable only inside OpenCode: `opencode` or `ftb delegate`)']
+        L += ['- `%s`' % k for k in r['free_opencode_client']]
     if r['free_monitor_only']:
-        L += ['', '## Free but monitor-only (router cannot call)']
+        L += ['', '## Free but monitor-only (not usable as a chat model)']
         L += ['- `%s`: %s' % (x['key'], x['reason']) for x in r['free_monitor_only']]
-    L += ['', 'Note: OpenCode Zen does not publish end dates for free periods; '
-          'treat every Zen free model as limited-time.']
+    L += ['', 'Note: OpenCode Zen does not publish end dates for free periods; treat every Zen free model as '
+          'limited-time. Official docs: "Free-tier chat models require OpenCode".']
     return '\n'.join(L) + '\n'
 
 

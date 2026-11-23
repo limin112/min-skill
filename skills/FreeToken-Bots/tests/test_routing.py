@@ -21,6 +21,7 @@ class RoutingTests(MockCase):
         mo = C.find(self.cat, 'opencode/msgs-only-free')
         self.assertTrue(mo['free'])
         self.assertFalse(mo['api_callable'])
+        self.assertTrue(mo['opencode_client'])
 
     def test_auto_picks_free_and_answers(self):
         r = self.router().dispatch(dict(CHAT, model='auto'))
@@ -49,38 +50,49 @@ class RoutingTests(MockCase):
         r = self.router().dispatch(dict(CHAT, model='gpt-5'))
         self.assertTrue(r.model['free'])
 
-    def test_daily_quota_blocks_provider_and_fails_over(self):
-        r = self.router().dispatch(dict(CHAT, model='openrouter/vendor/quota:free'))
-        self.assertEqual(r.model['provider'], 'opencode', 'OpenRouter daily free quota is account-wide')
-        self.assertEqual(r.attempts[0]['kind'], 'quota_exhausted')
+    def test_daily_quota_blocks_whole_openrouter_no_paid_fallback(self):
+        router = self.router()
+        with self.assertRaises(RouteError) as cm:
+            router.dispatch(dict(CHAT, model='openrouter/vendor/quota:free'))
+        self.assertEqual(cm.exception.status, 429)
+        self.assertEqual(cm.exception.attempts[0]['kind'], 'quota_exhausted')
+        self.assertEqual(self.upstream_models(), ['vendor/quota:free'],
+                         'daily free quota is account-wide: no other OpenRouter model is tried')
+        self.assertTrue(router.state.provider_blocked('openrouter'))
         self.assertNoPaidCalls()
 
-    def test_zen_free_usage_limit_blocks_zen(self):
-        self.mock.behaviour['good-free'] = 'zen_quota'
+    def test_zen_is_never_routed(self):
         router = self.router(prefer=['opencode/good-free'])
-        r = router.dispatch(dict(CHAT, model='auto'))
-        self.assertEqual(r.model['provider'], 'openrouter')
-        b = router.state.provider_blocked('opencode')
-        self.assertIsNotNone(b)
-        until = dt.datetime.fromisoformat(b['until'])
-        self.assertLess(until, now() + dt.timedelta(seconds=200), 'retry-after honoured')
+        self.assertFalse(router.provider_usable('opencode')[0])
+        self.assertNotIn('opencode', {m['provider'] for m in router.candidates('auto')})
+        with self.assertRaises(RouteError) as cm:
+            router.dispatch(dict(CHAT, model='opencode/good-free'))
+        self.assertEqual((cm.exception.status, cm.exception.kind), (400, 'monitor_only_model'))
+        self.assertIn('require OpenCode', cm.exception.message)
+        router.dispatch(dict(CHAT, model='auto'))
+        self.assertNoPaidCalls()   # also asserts zero calls to the Zen mock
 
     def test_payment_required_never_retries_paid(self):
         self.mock.behaviour['vendor/big-free:free'] = 'payment'
         router = self.router()
-        r = router.dispatch(dict(CHAT, model='auto'))
-        self.assertEqual(r.model['provider'], 'opencode')
+        with self.assertRaises(RouteError) as cm:
+            router.dispatch(dict(CHAT, model='auto'))
+        self.assertEqual(cm.exception.status, 429)
+        self.assertEqual(self.upstream_models(), ['vendor/big-free:free'])
         self.assertTrue(router.state.provider_blocked('openrouter'))
         self.assertNoPaidCalls()
 
     def test_server_error_and_rate_limit_cool_model_only(self):
         self.mock.behaviour['vendor/big-free:free'] = 'server'
+        self.mock.behaviour['vendor/quota:free'] = 'rate'
         router = self.router()
         r = router.dispatch(dict(CHAT, model='auto'))
-        self.assertNotEqual(r.model['key'], 'openrouter/vendor/big-free:free')
+        self.assertNotIn(r.model['key'], ('openrouter/vendor/big-free:free', 'openrouter/vendor/quota:free'))
         self.assertTrue(router.state.model_cooling('openrouter/vendor/big-free:free'))
-        self.assertEqual(r.attempts[0]['kind'], 'upstream_error')
-        self.assertIsNone(router.state.provider_blocked('opencode'))
+        self.assertTrue(router.state.model_cooling('openrouter/vendor/quota:free'))
+        self.assertEqual([a.get('kind') for a in r.attempts[:2]], ['upstream_error', 'rate_limited'])
+        self.assertIsNone(router.state.provider_blocked('openrouter'))
+        self.assertNoPaidCalls()
 
     def test_bad_request_is_not_retried(self):
         self.mock.behaviour['vendor/big-free:free'] = 'bad'
@@ -90,8 +102,8 @@ class RoutingTests(MockCase):
         self.assertEqual(len(self.mock.calls), 1)
 
     def test_all_exhausted_returns_error_not_paid(self):
-        for mid in ('vendor/big-free:free', 'vendor/notools:free', 'openrouter/free', 'good-free',
-                    'stream-error-free'):
+        for mid in ('vendor/big-free:free', 'vendor/notools:free', 'openrouter/free', 'vendor/second:free',
+                    'vendor/stream-error:free'):
             self.mock.behaviour[mid] = 'server'
         with self.assertRaises(RouteError) as cm:
             self.router().dispatch(dict(CHAT, model='auto'))
@@ -103,11 +115,11 @@ class RoutingTests(MockCase):
         self.assertNotIn('openrouter/vendor/notools:free', [m['key'] for m in pool])
 
     def test_pinned_without_fallback(self):
-        self.mock.behaviour['good-free'] = 'server'
+        self.mock.behaviour['vendor/second:free'] = 'server'
         router = self.router(pinned_fallback=False)
         with self.assertRaises(RouteError):
-            router.dispatch(dict(CHAT, model='opencode/good-free'))
-        self.assertEqual(self.upstream_models(), ['good-free'])
+            router.dispatch(dict(CHAT, model='openrouter/vendor/second:free'))
+        self.assertEqual(self.upstream_models(), ['vendor/second:free'])
 
     def test_stale_catalog_fails_closed(self):
         cat = C.load()
@@ -124,6 +136,7 @@ class RoutingTests(MockCase):
         self.assertEqual(self.mock.calls, [])
 
     def test_model_turned_paid_after_scan_is_refused(self):
+        self.mock.behaviour['vendor/quota:free'] = 'ok'
         router = self.router()
         for mm in router.cat['models']:
             if mm['key'] == 'openrouter/vendor/big-free:free':
@@ -143,11 +156,11 @@ class RoutingTests(MockCase):
         self.assertEqual(sent['max_tokens'], 32000)
 
     def test_stream_first_event_error_fails_over(self):
-        router = self.router(prefer=['opencode/stream-error-free'])
+        router = self.router(prefer=['vendor/stream-error:free'])
         r = router.dispatch(dict(CHAT, model='auto', stream=True))
         events = list(r.events)
-        self.assertEqual(r.attempts[0]['model'], 'opencode/stream-error-free')
-        self.assertNotEqual(r.model['key'], 'opencode/stream-error-free')
+        self.assertEqual(r.attempts[0]['model'], 'openrouter/vendor/stream-error:free')
+        self.assertNotEqual(r.model['key'], 'openrouter/vendor/stream-error:free')
         text = ''.join((json.loads(e)['choices'] or [{}])[0].get('delta', {}).get('content') or ''
                        for e in events if e != '[DONE]')
         self.assertIn('PONG', text)

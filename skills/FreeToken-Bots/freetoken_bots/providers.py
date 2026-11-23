@@ -211,9 +211,15 @@ def _collect_dates(when, schedule, trail):
                 _collect_dates(sub, schedule, trail)
 
 
+ZEN_CLIENT_ONLY = ('OpenCode client only (docs: "Free-tier chat models require OpenCode; '
+                   'use paid models or Go from other clients") - use OpenCode or `ftb delegate`')
+
+
 def normalize_opencode(raw, cfg_provider):
+    """OpenCode Zen catalog. Zen free models are usable only inside the OpenCode
+    client, so nothing from Zen is ever API-callable through the router. Free
+    chat models are flagged `opencode_client` (usable via OpenCode / ftb delegate)."""
     out = []
-    allowed = cfg_provider.get('allowed_hosts') or ['opencode.ai']
     for m in (raw or {}).get('data', []):
         mid = m.get('id')
         if not mid:
@@ -226,20 +232,14 @@ def normalize_opencode(raw, cfg_provider):
         outputs = mods.get('output') or []
         inputs = sorted({'image' if x.startswith('image') else x.split('/')[0]
                          for x in (mods.get('input') or ['text'])})
-        chat = apis.get('chat-completions') or {}
-        base = cfg_provider.get('base_url') or chat.get('base_url')
-        reason = None
+        chat_model = m.get('type') in (None, 'chat') and outputs == ['text'] and any(
+            a in apis for a in ('chat-completions', 'responses', 'messages'))
         if not free:
             reason = 'not free'
-        elif m.get('type') not in (None, 'chat'):
-            reason = 'type %s' % m.get('type')
-        elif outputs != ['text']:
-            reason = 'non-text output'
-        elif not chat:
-            reason = 'upstream protocol %s not adapted yet (router speaks chat-completions)' % (
-                m.get('recommended_api') or ','.join(apis))
-        elif not base or not (cfg_provider.get('base_url') or host_allowed(base, allowed)):
-            reason = 'catalog base_url not on an allowed host'
+        elif not chat_model:
+            reason = 'not a chat model (type %s, api %s)' % (m.get('type'), ','.join(apis))
+        else:
+            reason = ZEN_CLIENT_ONLY
         desc = m.get('description') or ''
         limit = m.get('limit') or {}
         anonymous = (not m.get('canonical_id') and not m.get('open_weights')) or bool(
@@ -252,7 +252,8 @@ def normalize_opencode(raw, cfg_provider):
             'free': free,
             'price_note': 'free' if free else _zen_price_note(m.get('cost')),
             'api': m.get('recommended_api') or ','.join(apis),
-            'api_callable': reason is None,
+            'api_callable': False,
+            'opencode_client': free and chat_model,
             'monitor_reason': reason,
             'tools': bool((caps.get('tools') or {}).get('supported')),
             'reasoning': bool((caps.get('reasoning') or {}).get('supported')),
@@ -265,7 +266,7 @@ def normalize_opencode(raw, cfg_provider):
             'price_schedule': schedule,
             'anonymous': anonymous,
             'meta_router': False,
-            'base_url': base if reason is None else None,
+            'base_url': None,
             'canonical_id': m.get('canonical_id'),
             'created': m.get('created'),
         })
