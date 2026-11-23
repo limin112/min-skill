@@ -1,0 +1,14 @@
+# Option A (no file edits): ftb run codex -- exec "..."
+# Option B: append to ~/.codex/config.toml:
+[model_providers.freetoken]
+name = "FreeToken-Bots"
+base_url = "http://127.0.0.1:8787/v1"
+wire_api = "responses"
+env_key = "FTB_ROUTER_KEY"
+
+# and create ~/.codex/free.config.toml (Codex profile file):
+model_provider = "freetoken"
+model = "auto"
+model_context_window = 128000
+
+# then: export FTB_ROUTER_KEY=ftb-local && codex --profile free

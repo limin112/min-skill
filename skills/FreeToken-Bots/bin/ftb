@@ -1,0 +1,7 @@
+#!/bin/sh
+# FreeToken-Bots CLI wrapper. Symlink into PATH:  ln -s "$PWD/bin/ftb" ~/.local/bin/ftb
+SELF="$0"
+while [ -L "$SELF" ]; do
+  T="$(readlink "$SELF")"; case "$T" in /*) SELF="$T";; *) SELF="$(dirname "$SELF")/$T";; esac
+done
+exec python3 "$(cd "$(dirname "$SELF")/.." && pwd)/scripts/ftb.py" "$@"

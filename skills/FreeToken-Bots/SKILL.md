@@ -1,83 +1,64 @@
 ---
 name: freetoken-bots
-description: Discover, verify, and maintain zero-priced OpenRouter models for Pi child-agent workflows used by Muse, Grokbot, or Dot. Activates when the user mentions OpenRouter, Pi, free tokens, or free models （免费 token / 免费模型）. Use for Pi installation, free-model discovery, quota-safe Pi fallback, model recommendations, and daily health checks.
-version: 0.2.0
+description: Free-model radar, quota tracker and zero-cost router for OpenRouter + OpenCode Zen. Discovers free models daily (new / no-longer-free / limited-time / anonymous), tracks free quota and rate limits, and runs a local OpenAI-compatible router (Chat Completions + Responses API) that fails over only between free models, never to a paid one. Works with Pi, Codex CLI, OpenCode and any OpenAI-compatible agent (Aider, Cline, Roo Code, Hermes...). Activates when the user mentions OpenRouter, OpenCode Zen, free tokens, free models, zero-cost models, 免费 token, 免费模型, 白嫖模型, or wants an agent to run on free models.
+version: 1.0.0
 ---
 
 # FreeToken-Bots
 
-Pi is the execution layer; Muse, Grokbot and Dot may invoke it **only if they can run shell commands or access a separately deployed Pi service**. Do not claim to replace those products' native models.
+Free-model radar + quota tracker + fail-closed router. Python ≥3.9, standard library only.
+Entry point: `python3 <skill-dir>/scripts/ftb.py <command>` (or `<skill-dir>/bin/ftb`). Data lives in `~/.freetoken-bots/` (override with `FTB_HOME`).
 
-## Activation
+## When activated
 
-Use this skill whenever the user mentions **OpenRouter**, **Pi**, **free tokens （免费 token）**, or **free models （免费模型）** — in any language — or asks about zero-cost model options, Pi model configuration, or quota-safe fallbacks for child agents. On first activation in a session, run Step 0 below, then run `scan` if the cached report is older than 24h.
+1. `ftb doctor` — keys present? catalog fresh? router running? which agents installed?
+2. If the last scan is older than 24h: `ftb scan`.
+3. Answer from data, not memory: `ftb models`, `ftb report`, `ftb quota`, `ftb route --tools`.
+4. To run an agent on free models: `ftb serve` (or `ftb run <agent> -- ...`, which starts an embedded router), then `ftb agent <id>` for the config.
 
-## Step 0 — Install Pi first (required)
+## Commands
 
-Nothing in this skill works without Pi. If `command -v pi` fails, install it **before** doing anything else:
+| command | what it does |
+|---|---|
+| `ftb scan` | fetch OpenRouter + OpenCode Zen catalogs, record changes, write `~/.freetoken-bots/reports/<date>.md` |
+| `ftb models [--tools] [--provider p] [--all]` | free models with tools / context / end date / routing status |
+| `ftb report [--hours 24]` | new free, no longer free, delisted, ending soon, anonymous, monitor-only |
+| `ftb quota` | per provider: measured usage, live API data (OpenRouter `/key`), learned blocks, documented policy — each labelled by source |
+| `ftb probe --model <key> [--tools]` / `--all` | real test call (free models only, needs provider key) |
+| `ftb route [--tools]` | show failover order, no calls |
+| `ftb serve` | router at `http://127.0.0.1:8787/v1` |
+| `ftb agents` / `ftb agent <id> [--apply]` | support matrix / config for one agent |
+| `ftb run <agent> -- <args>` | launch codex / opencode / aider / any command via the router, no config edits |
+| `ftb schedule [--install cron\|launchd]` | daily 08:00 scan |
 
-```bash
-# Official installer (recommended)
-curl -fsSL https://pi.dev/install.sh | sh
-# then restart the shell (or re-source PATH) and verify:
-pi --version
-```
+Keys (env): `OPENROUTER_API_KEY`, `OPENCODE_API_KEY` (free Zen key from opencode.ai/auth), optional `FTB_ROUTER_KEY` (router auth; required if binding to a non-loopback host).
 
-Alternative (requires Node.js ≥ 22.19):
+## Rules you must follow
 
-```bash
-npm install -g @earendil-works/pi-coding-agent
-pi --version
-```
+- **Never route to a paid model.** Free = every published price is exactly 0 in the provider's own catalog. The router re-checks this before every call and every failover hop, refuses stale catalogs (>24h), strips OpenRouter `models`/`provider`/`plugins`/web-search fields and adds `provider.max_price = 0`. A request naming a paid model gets HTTP 400. Do not suggest workarounds that would bypass this.
+- A hand-typed OpenRouter id without `:free` is the PAID variant. Resolve ids through `ftb models` / `ftb probe`, never from memory.
+- Quota: report what is measured vs documented vs unknown exactly as `ftb quota` labels it. OpenCode Zen has no quota API — say "unknown" rather than inventing a number.
+- Free models that cannot be called through the API (non-chat protocol, audio output, product-only quota) are **monitor-only**; say so.
+- Do not edit a user's agent config without asking. `ftb agent pi|opencode --apply` backs up the file and adds only the `freetoken` provider; show `--dry-run` first and get approval. Prefer `ftb run`, which edits nothing.
+- Do not spoof another client (e.g. pretend to be the OpenCode app) to get around anonymous limits. Anonymous Zen access is off by default; a free Zen API key is the supported path.
+- Never print or commit API keys.
+- Do not bind the router to a public interface without `FTB_ROUTER_KEY`.
 
-Notes:
-- Pi keeps its config in `~/.pi/agent/` (`settings.json`, `models.json`); that directory survives VM replacement, but the `pi` binary itself may not — re-run this step whenever `pi` is missing from PATH.
-- After install, run `pi --list-models` once to confirm a healthy install before proceeding.
+## Daily scan is required
 
-## Principles
+The skill does not scan by itself. On install tell the user: "这个 skill 需要每天早上 8 点跑一次扫描（`ftb schedule --install cron` 或 launchd），不配的话免费名单会过期。" `ftb serve` also rescans every 6h while it runs.
 
-- Free means OpenRouter catalog `pricing.prompt == 0` and `pricing.completion == 0`, with any explicit request/cache prices also zero. Free eligibility is dynamic, not a permanent promise.
-- Only classify **verified** total-parameter counts ≥100B as flagship. The `/models` API may omit parameter counts; in that case preserve the model in `needs_parameter_verification`, not the approved pool. Do not guess 100B from a model's name.
-- Require `tools` in `supported_parameters` for child-agent candidates; independently probe tool-calling before production use. An ordinary completion probe is **not** proof of tool support.
-- Never route to a paid model automatically. A 402, quota-exhausted response, or rate limit is not a reason to remove the user's existing Pi provider configuration.
-- **Fail-closed model resolution (v0.1.1):** `probe --model` never trusts a hand-typed ID. It is resolved against the latest free scan: an exact verified-free ID is used as-is; a missing `:free` suffix is auto-corrected with a loud warning (dropping it silently routes to the PAID variant — this exact mistake cost a live call once); any other ID is refused outright. A stale (>24h) scan is refreshed before resolving.
-- Do not put API keys in Git or print key values. Prompt for `OPENROUTER_API_KEY` if live probing is requested and unset.
-- Pi settings should not be rewritten without preserving user providers/defaults and validating the installed Pi's schema.
-- All unattended `pi -p` calls must use `</dev/null`.
+## Agent support (honest status)
 
-## Usage
+| agent | status | how |
+|---|---|---|
+| Pi | verified (pi 1.6.0, full tool loop) | `ftb agent pi --apply`, then `pi --provider freetoken --model auto` |
+| Codex CLI | verified (0.163.0) | `ftb run codex -- exec "..."` or profile files from `ftb agent codex`; Codex needs the Responses API, which the router translates |
+| OpenCode | verified (1.19.6) | `ftb run opencode -- run "..."` or `ftb agent opencode --apply`; model `freetoken/auto` |
+| Aider, Cline, Roo Code, Hermes Agent | documented, not run here | OpenAI-compatible base URL + model `auto` |
+| Gemini CLI | not supported | needs a Gemini-protocol adapter |
+| Claude Code | not supported yet | needs an Anthropic Messages adapter (`/v1/messages` returns 501) |
 
-From this skill directory:
+## Legacy
 
-```bash
-python3 scripts/radar.py scan
-python3 scripts/radar.py status
-OPENROUTER_API_KEY=... python3 scripts/radar.py probe --model 'exact/openrouter-id:free'
-python3 scripts/radar.py sync --dry-run
-```
-
-`scan` writes a private report to `~/.pi/agent/freetoken-bots.json`. `sync` currently emits a **proposal only**, deliberately not modifying `models.json` (Pi schema and model identifiers must be verified on the installed Pi before write integration). This is a safe MVP, not an automatic router.
-
-## Pi integration workflow
-
-0. Step 0 above must be complete: `pi` on PATH and `pi --version` working. If not, install first.
-1. Check `~/.pi/agent/settings.json`, `~/.pi/agent/models.json`, and `pi --list-models` without disclosing keys.
-2. Scan. Resolve model parameter counts from trustworthy model/provider documentation. Only move independently verified ≥100B entries into approved pool.
-3. Probe a plain chat completion and a separate real `tools` call; distinguish 429 temporary rate limit from hard daily-quota exhaustion.
-4. Check OpenRouter model ID, provider compatibility and context/max-token fields. Generate a candidate diff; do **not** overwrite Ling custom provider or `enabledModels`.
-5. Require explicit approval of diff before applying. Back up original files, write atomically, run `python3 -m json.tool`, `pi --list-models` and `pi -p 'say pong' --no-extensions </dev/null`. On failure revert.
-6. For Muse/Grokbot/Dot use a controlled shell child-agent invocation. Confirm host supports executing a local Pi command, shared workspace access and result capture first. Never expose Pi's shell/API to the public internet without authentication.
-7. Ask user which model to use before major tasks; use automatic fallback only after user opts in. Never replay side-effectful actions after uncertain completion.
-
-## Scheduling (required, not optional)
-
-This skill does **not** scan by itself. A daily scan is **required** — without it the free-model list goes stale (free eligibility on OpenRouter is dynamic: models get delisted or repriced without notice).
-
-- Run `python3 /absolute/path/to/scripts/radar.py scan` **every day at 08:00 local time** on the machine running Pi. Use cron, launchd, or a systemd timer — pick one and keep it. Example cron: `0 8 * * * /usr/bin/python3 /path/to/scripts/radar.py scan`
-- **On install, tell the user explicitly:** "这个 skill 需要每天早上 8 点跑一次扫描定时任务，不配的话免费名单会过期，它自己不会动。" Do not present the skill as working without the timer.
-- Each run: compare against the previous report; surface newly listed free models, delisted models, repriced (no-longer-free) models, and any change to the `eligible` pool.
-- A ChatGPT reminder/watch does not edit that machine. Confirm repeated transient errors before marking a model unusable. Keep separate `eligible`, `needs_parameter_verification`, and inactive states.
-
-## Model selection
-
-Prefer verified free ≥100B tool-capable models when available, but report a smaller tool-capable free model separately when that is operationally better. If no candidate passes, report empty pool rather than silently falling back to paid tokens.
+`scripts/radar.py` (v0.2: OpenRouter-only scan/probe, Pi cache path) still works for old cron jobs; new setups should use `ftb`.

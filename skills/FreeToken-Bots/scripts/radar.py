@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""FreeToken-Bots: conservative OpenRouter free-model discovery and Pi sync."""
+"""FreeToken-Bots v0.x legacy entry point (OpenRouter only, Pi cache path).
+
+Kept for backward compatibility. New features (OpenCode Zen, quota tracking,
+router, multi-agent configs) live in `scripts/ftb.py`.
+"""
 import argparse
 import datetime as dt
 import json
@@ -34,11 +38,13 @@ def zero(value):
     except (ValueError, TypeError):
         return False
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from freetoken_bots.providers import openrouter_pricing_free  # noqa: E402
+
+
 def is_free(model):
-    p = model.get('pricing') or {}
-    if not (zero(p.get('prompt')) and zero(p.get('completion'))):
-        return False
-    return all(zero(p[k]) for k in ('request', 'input_cache_read', 'input_cache_write') if k in p)
+    # v1: every published price (incl. web_search, image, tiered overrides) must be zero
+    return openrouter_pricing_free(model.get('pricing'))
 
 def billion(model):
     # Never infer size from context length, ID digits, or model family alone.
